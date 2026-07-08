@@ -39,6 +39,11 @@ export default function NewInterviewPage() {
       }
 
       const data = await res.json()
+      // Store opening message for the chat page to pick up
+      sessionStorage.setItem(
+        `interview_${data.sessionId}`,
+        JSON.stringify({ openingMessage: data.openingMessage })
+      )
       router.push(`/interview/${data.sessionId}`)
     } catch {
       setError("Could not start interview. Make sure Ollama is running locally.")
