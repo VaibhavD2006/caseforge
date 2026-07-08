@@ -1,0 +1,158 @@
+{
+  "dimensions": {
+    "structure": {
+      "weight": 0.20,
+      "description": "How well the candidate organizes their approach using a logical, MECE framework.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "No framework offered. Response jumps to conclusions without structure. Key components missing entirely."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Framework present but not MECE — overlapping buckets or missing a key dimension. Some logical organization visible."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Clear, MECE framework that covers the problem well. Buckets are distinct and relevant. Minor gaps in one area."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Textbook MECE structure adapted to this specific case. Prioritized buckets with explicit rationale. Interviewer has nothing to add."
+        }
+      ]
+    },
+    "hypothesis": {
+      "weight": 0.15,
+      "description": "Ability to form and test data-driven hypotheses rather than exploring blindly.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "No hypothesis formed. Candidate explores data without direction. Cannot articulate what they are trying to prove."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Hypothesis stated but vague ('I think costs might be the issue'). Not refined based on data. Fails to update when evidence contradicts."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Clear, testable hypothesis stated early. Updated appropriately as data is revealed. Candidate knows what data would confirm or disprove it."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Laser-focused hypothesis grounded in business logic before data is even provided. Prioritized accordingly. Updated precisely as evidence emerges."
+        }
+      ]
+    },
+    "quantitative": {
+      "weight": 0.15,
+      "description": "Accuracy, speed, and confidence in numerical reasoning, estimation, and math.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "Significant arithmetic errors. Cannot estimate market size without prompting. Avoids numbers or gets fundamentally wrong answers."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Math is directionally correct but slow or requires significant prompting. Estimation lacks reasonable anchors."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Accurate and reasonably fast. Rounds numbers sensibly. Estimation approach is logical and well-anchored. Checks for reasonableness."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Mental math is fast and accurate. Estimations are precise with well-explained assumptions. Candidate proactively asks for data needed and uses it well."
+        }
+      ]
+    },
+    "business_judgment": {
+      "weight": 0.20,
+      "description": "Quality of commercial insight, prioritization, and practical business instincts.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "Recommendations ignore practical business constraints. No sense of what matters most. Textbook without real-world grounding."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Some commercial awareness but misses key stakeholder or market dynamics. Prioritization is not clearly argued."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Good instincts for what matters commercially. Recommendations are actionable and account for real constraints. Prioritizes correctly."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Demonstrates genuine business maturity. Considers implementation, competitive response, and second-order effects. Would be good in a client meeting."
+        }
+      ]
+    },
+    "synthesis": {
+      "weight": 0.15,
+      "description": "Ability to pull together analysis into a clear, action-oriented recommendation.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "No clear recommendation. Candidate summarizes facts without drawing a conclusion. 'It depends' without resolution."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Recommendation stated but weakly supported. Missing a headline-first structure. Reasoning not clearly connected to earlier analysis."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Headline recommendation stated clearly, followed by two or three supporting reasons tied to analysis. Good use of case data as evidence."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Crisp, confident recommendation. Concise but complete. Proactively addresses limitations and risks. Feels like a partner-ready slide."
+        }
+      ]
+    },
+    "communication": {
+      "weight": 0.10,
+      "description": "Clarity, conciseness, and professionalism of verbal communication throughout.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "Rambling, unfocused responses. Significant filler. Interviewer cannot follow the thread. No signposting."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Generally understandable but loses the thread sometimes. Some unnecessary hedging. Occasionally repeats points."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Clear and professional. Signposts transitions between sections. Keeps responses focused. Minimal filler."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Precise, compelling, and concise. Every sentence carries weight. Sounds like a polished professional presenting to a senior partner."
+        }
+      ]
+    },
+    "confidence": {
+      "weight": 0.05,
+      "description": "Composure under pressure, willingness to defend a position, and recovery from mistakes.",
+      "bands": [
+        {
+          "range": [1, 3],
+          "anchor": "Buckles under the first pushback. Immediately abandons correct reasoning when challenged. Visibly flustered."
+        },
+        {
+          "range": [4, 6],
+          "anchor": "Handles some pushback but occasionally caves too quickly. Mildly defensive when challenged. Recovers but takes time."
+        },
+        {
+          "range": [7, 8],
+          "anchor": "Maintains composure under direct challenge. Acknowledges the pushback but defends correct reasoning with evidence. Does not over-apologize."
+        },
+        {
+          "range": [9, 10],
+          "anchor": "Unflappable. Engages with pushback as a productive signal. Revises when wrong but stands firm when right. Exactly what a partner wants in a client meeting."
+        }
+      ]
+    }
+  }
+}
