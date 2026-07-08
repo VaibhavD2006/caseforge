@@ -1,2 +1,10 @@
-// Drizzle config — implemented in Task 3 (drizzle-kit installed there).
-export default {}
+import { defineConfig } from "drizzle-kit"
+
+export default defineConfig({
+  schema: "./lib/db/schema.ts",
+  out: "./db/migrations",
+  dialect: "postgresql",
+  dbCredentials: {
+    url: process.env.DATABASE_URL!,
+  },
+})
