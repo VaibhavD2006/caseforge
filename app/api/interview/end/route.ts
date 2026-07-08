@@ -4,6 +4,7 @@ import { completeSession } from "@/lib/db/queries/sessions"
 import { db } from "@/lib/db"
 import { interviewSessions } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { inngest } from "@/inngest/client"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -27,6 +28,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  const updated = await completeSession(sessionId)
-  return NextResponse.json({ sessionId, status: updated?.status ?? "evaluation_pending" })
+  await completeSession(sessionId)
+
+  // Dispatch async evaluation job
+  await inngest.send({
+    name: "interview/session.completed",
+    data: { sessionId, userId: session.user.id },
+  })
+
+  return NextResponse.json({ sessionId, status: "evaluation_pending" })
 }
