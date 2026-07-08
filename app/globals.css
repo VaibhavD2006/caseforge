@@ -1,26 +1,188 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/*
+  CaseForge AI — Design Tokens
+  Dark-mode-first, Restrained color strategy: tinted dark neutrals + one
+  authoritative indigo-blue brand accent. No light mode in MVP.
+  Values are OKLCH. See DESIGN.md for the full specification.
+*/
 
 @theme inline {
+  /* shadcn/ui semantic surface + component tokens */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* CaseForge semantic design tokens (usable as Tailwind utilities) */
+  --color-bg: var(--cf-bg);
+  --color-surface: var(--cf-surface);
+  --color-surface-raised: var(--cf-surface-raised);
+  --color-border-subtle: var(--cf-border);
+  --color-border-strong: var(--cf-border-strong);
+  --color-ink: var(--cf-ink);
+  --color-ink-muted: var(--cf-ink-muted);
+  --color-ink-faint: var(--cf-ink-faint);
+  --color-brand: var(--cf-brand);
+  --color-brand-hover: var(--cf-brand-hover);
+  --color-brand-subtle: var(--cf-brand-subtle);
+  --color-brand-muted: var(--cf-brand-muted);
+  --color-success: var(--cf-success);
+  --color-success-subtle: var(--cf-success-subtle);
+  --color-warning: var(--cf-warning);
+  --color-warning-subtle: var(--cf-warning-subtle);
+  --color-error: var(--cf-error);
+  --color-error-subtle: var(--cf-error-subtle);
+  --color-info: var(--cf-info);
+  --color-info-subtle: var(--cf-info-subtle);
+  --color-bronze: var(--cf-tier-bronze);
+  --color-silver: var(--cf-tier-silver);
+  --color-gold: var(--cf-tier-gold);
+  --color-emerald: var(--cf-tier-emerald);
+
+  /* Radius scale */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+  Root tokens. CaseForge ships dark-only in the MVP; the same dark values are
+  applied to :root and .dark so the app renders correctly whether or not the
+  `dark` class is present. shadcn variables are derived from CaseForge tokens.
+*/
+:root,
+.dark {
+  /* --- CaseForge core surfaces --- */
+  --cf-bg: oklch(0.11 0.012 258); /* near-black, slight indigo tint */
+  --cf-surface: oklch(0.15 0.013 258); /* dark panel / card bg */
+  --cf-surface-raised: oklch(0.19 0.014 258); /* modals, dropdowns */
+  --cf-border: oklch(0.25 0.015 258); /* subtle borders */
+  --cf-border-strong: oklch(0.35 0.018 258); /* visible dividers */
+
+  /* --- Text --- */
+  --cf-ink: oklch(0.93 0.005 258); /* primary text */
+  --cf-ink-muted: oklch(0.62 0.01 258); /* secondary text */
+  --cf-ink-faint: oklch(0.4 0.008 258); /* placeholder, disabled */
+
+  /* --- Brand: authoritative indigo-blue --- */
+  --cf-brand: oklch(0.62 0.19 258);
+  --cf-brand-hover: oklch(0.67 0.19 258);
+  --cf-brand-subtle: oklch(0.2 0.05 258);
+  --cf-brand-muted: oklch(0.35 0.1 258);
+
+  /* --- Semantic states --- */
+  --cf-success: oklch(0.62 0.15 158);
+  --cf-success-subtle: oklch(0.18 0.05 158);
+  --cf-warning: oklch(0.72 0.15 78);
+  --cf-warning-subtle: oklch(0.18 0.05 78);
+  --cf-error: oklch(0.6 0.18 22);
+  --cf-error-subtle: oklch(0.18 0.05 22);
+  --cf-info: oklch(0.62 0.12 225);
+  --cf-info-subtle: oklch(0.18 0.04 225);
+
+  /* --- Scoring tiers --- */
+  --cf-tier-bronze: oklch(0.65 0.12 55);
+  --cf-tier-silver: oklch(0.72 0.04 265);
+  --cf-tier-gold: oklch(0.78 0.15 85);
+  --cf-tier-emerald: oklch(0.72 0.16 160);
+
+  /* --- shadcn/ui variables mapped onto CaseForge tokens --- */
+  --background: var(--cf-bg);
+  --foreground: var(--cf-ink);
+  --card: var(--cf-surface);
+  --card-foreground: var(--cf-ink);
+  --popover: var(--cf-surface-raised);
+  --popover-foreground: var(--cf-ink);
+  --primary: var(--cf-brand);
+  --primary-foreground: oklch(0.98 0.005 258);
+  --secondary: var(--cf-surface-raised);
+  --secondary-foreground: var(--cf-ink);
+  --muted: var(--cf-surface);
+  --muted-foreground: var(--cf-ink-muted);
+  --accent: var(--cf-brand-subtle);
+  --accent-foreground: var(--cf-ink);
+  --destructive: var(--cf-error);
+  --border: var(--cf-border);
+  --input: var(--cf-border-strong);
+  --ring: var(--cf-brand);
+  --chart-1: var(--cf-brand);
+  --chart-2: var(--cf-info);
+  --chart-3: var(--cf-success);
+  --chart-4: var(--cf-warning);
+  --chart-5: var(--cf-tier-gold);
+  --radius: 0.5rem;
+
+  /* Sidebar */
+  --sidebar: var(--cf-surface);
+  --sidebar-foreground: var(--cf-ink);
+  --sidebar-primary: var(--cf-brand);
+  --sidebar-primary-foreground: oklch(0.98 0.005 258);
+  --sidebar-accent: var(--cf-brand-subtle);
+  --sidebar-accent-foreground: var(--cf-ink);
+  --sidebar-border: var(--cf-border);
+  --sidebar-ring: var(--cf-brand);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    background-color: var(--cf-bg);
+    color: var(--cf-ink);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
 }
