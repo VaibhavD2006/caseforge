@@ -6,20 +6,30 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
   const isLoggedIn = !!req.auth
 
+  // Forward pathname so server component layouts can read it
+  const response = NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(req.headers),
+        "x-pathname": pathname,
+      }),
+    },
+  })
+
   // Public routes — always allow
   const publicRoutes = ["/", "/sign-in"]
   if (publicRoutes.includes(pathname)) {
-    return NextResponse.next()
+    return response
   }
 
   // Auth API routes — always allow
   if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next()
+    return response
   }
 
   // Inngest webhook — always allow
   if (pathname.startsWith("/api/inngest")) {
-    return NextResponse.next()
+    return response
   }
 
   // Protected routes — redirect to sign-in if not authenticated
@@ -29,7 +39,7 @@ export default auth((req) => {
     return NextResponse.redirect(signInUrl)
   }
 
-  return NextResponse.next()
+  return response
 })
 
 export const config = {
