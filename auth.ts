@@ -24,6 +24,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/sign-in",
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) {
+        return `${baseUrl}/dashboard`
+      }
+      return url
+    },
     async jwt({ token, account, profile }) {
       if (account && profile) {
         token.googleId = account.providerAccountId

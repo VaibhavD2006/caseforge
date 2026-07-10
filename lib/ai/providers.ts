@@ -1,47 +1,61 @@
-import { Ollama } from "ollama"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-const ollama = new Ollama({
-  host: process.env.OLLAMA_HOST ?? "http://localhost:11434",
-})
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
-const DEFAULT_MODEL = process.env.OLLAMA_MODEL ?? "llama3.2"
+const DEFAULT_MODEL = process.env.GEMINI_MODEL ?? "gemini-2.0-flash"
 
 export type Message = {
   role: "system" | "user" | "assistant"
   content: string
 }
 
+function buildGeminiMessages(messages: Message[]) {
+  const systemMessage = messages.find((m) => m.role === "system")
+  const chatMessages = messages.filter((m) => m.role !== "system")
+
+  const history = chatMessages.slice(0, -1).map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }))
+
+  const lastMessage = chatMessages[chatMessages.length - 1]
+
+  return { systemMessage, history, lastMessage }
+}
+
 export async function chatCompletion(
   messages: Message[],
   options?: { model?: string; temperature?: number }
 ): Promise<string> {
-  const response = await ollama.chat({
+  const model = genAI.getGenerativeModel({
     model: options?.model ?? DEFAULT_MODEL,
-    messages,
-    options: {
-      temperature: options?.temperature ?? 0.7,
-    },
+    systemInstruction: messages.find((m) => m.role === "system")?.content,
+    generationConfig: { temperature: options?.temperature ?? 0.7 },
   })
-  return response.message.content
+
+  const { history, lastMessage } = buildGeminiMessages(messages)
+  const chat = model.startChat({ history })
+  const result = await chat.sendMessage(lastMessage?.content ?? "")
+  return result.response.text()
 }
 
 export async function* chatStream(
   messages: Message[],
   options?: { model?: string; temperature?: number }
 ): AsyncGenerator<string> {
-  const stream = await ollama.chat({
+  const model = genAI.getGenerativeModel({
     model: options?.model ?? DEFAULT_MODEL,
-    messages,
-    stream: true,
-    options: {
-      temperature: options?.temperature ?? 0.7,
-    },
+    systemInstruction: messages.find((m) => m.role === "system")?.content,
+    generationConfig: { temperature: options?.temperature ?? 0.7 },
   })
 
-  for await (const chunk of stream) {
-    if (chunk.message.content) {
-      yield chunk.message.content
-    }
+  const { history, lastMessage } = buildGeminiMessages(messages)
+  const chat = model.startChat({ history })
+  const result = await chat.sendMessageStream(lastMessage?.content ?? "")
+
+  for await (const chunk of result.stream) {
+    const text = chunk.text()
+    if (text) yield text
   }
 }
 
@@ -49,13 +63,17 @@ export async function jsonCompletion<T>(
   messages: Message[],
   options?: { model?: string }
 ): Promise<T> {
-  const response = await ollama.chat({
+  const model = genAI.getGenerativeModel({
     model: options?.model ?? DEFAULT_MODEL,
-    messages,
-    format: "json",
-    options: {
+    systemInstruction: messages.find((m) => m.role === "system")?.content,
+    generationConfig: {
       temperature: 0.1,
+      responseMimeType: "application/json",
     },
   })
-  return JSON.parse(response.message.content) as T
+
+  const { history, lastMessage } = buildGeminiMessages(messages)
+  const chat = model.startChat({ history })
+  const result = await chat.sendMessage(lastMessage?.content ?? "")
+  return JSON.parse(result.response.text()) as T
 }
