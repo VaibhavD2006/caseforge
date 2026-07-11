@@ -110,7 +110,7 @@ function RadioCard({
         <p className="text-xs text-ink-faint mt-0.5 mb-1.5">{description}</p>
         {(duration || emphasis) && (
           <div className="flex gap-3 text-ink-faint text-xs">
-            {duration && <span>⏱ {duration}</span>}
+            {duration && <span><span aria-hidden="true">⏱</span> {duration}</span>}
             {emphasis && <span className="truncate">Focus: {emphasis}</span>}
           </div>
         )}
