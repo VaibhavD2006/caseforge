@@ -120,6 +120,7 @@ export default function DashboardClient({
                 { href: "/goals", label: "Goals" },
                 { href: "/analytics", label: "Analytics" },
                 { href: "/history", label: "History" },
+                { href: "/settings", label: "Settings" },
               ].map((item) => (
                 <Link key={item.href} href={item.href} className="text-ink-muted text-sm hover:text-ink transition-colors">
                   {item.label}
