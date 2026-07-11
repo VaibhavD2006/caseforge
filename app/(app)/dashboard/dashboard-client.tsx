@@ -12,6 +12,7 @@ import { WeaknessCard } from "@/components/dashboard/WeaknessCard"
 import { DrillsWidget } from "@/components/dashboard/DrillsWidget"
 import { GoalsWidget } from "@/components/dashboard/GoalsWidget"
 import { RecruiterSummaryCard } from "@/components/dashboard/RecruiterSummaryCard"
+import { FirmReadinessWidget } from "@/components/dashboard/FirmReadinessWidget"
 
 type Session = {
   id: string
@@ -61,6 +62,7 @@ type Props = {
   trendData: { label: string; score: number }[]
   goals: Goal[]
   recommendedDrills: Drill[]
+  targetFirms: string[]
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -85,6 +87,7 @@ export default function DashboardClient({
   trendData,
   goals,
   recommendedDrills,
+  targetFirms,
 }: Props) {
   const firstName = userName?.split(" ")[0] ?? "there"
 
@@ -188,20 +191,25 @@ export default function DashboardClient({
           <DimensionBreakdown scores={avgDimensionScores} />
         </FadeUp>
 
-        {/* Row 3: Activity widgets */}
+        {/* Row 3: Firm Readiness */}
+        <FadeUp delay={0.05} className="mb-4">
+          <FirmReadinessWidget avgDimensions={avgDimensionScores} targetFirms={targetFirms} />
+        </FadeUp>
+
+        {/* Row 4: Activity widgets */}
         <StaggerList className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <StaggerItem><RecentInterviews sessions={sessions} /></StaggerItem>
           <StaggerItem><GoalsWidget goals={goals} /></StaggerItem>
           <StaggerItem><DrillsWidget drills={recommendedDrills} /></StaggerItem>
         </StaggerList>
 
-        {/* Row 4: Weakness + Recruiter summary */}
+        {/* Row 5: Weakness + Recruiter summary */}
         <FadeUp delay={0.05} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <WeaknessCard weaknesses={weaknesses} />
           <RecruiterSummaryCard summary={latestRecruiterSummary} />
         </FadeUp>
 
-        {/* Row 5: Mode usage + CTA */}
+        {/* Row 6: Mode usage + CTA */}
         <FadeUp delay={0.1} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-surface border border-border-subtle rounded-xl p-5">
             <div className="flex items-center gap-2 mb-4">
