@@ -92,22 +92,22 @@
 :root,
 .dark {
   /* --- CaseForge core surfaces --- */
-  --cf-bg: oklch(0.11 0.012 258); /* near-black, slight indigo tint */
-  --cf-surface: oklch(0.15 0.013 258); /* dark panel / card bg */
-  --cf-surface-raised: oklch(0.19 0.014 258); /* modals, dropdowns */
-  --cf-border: oklch(0.25 0.015 258); /* subtle borders */
-  --cf-border-strong: oklch(0.35 0.018 258); /* visible dividers */
+  --cf-bg: oklch(0.10 0.012 148); /* near-black, slight green tint */
+  --cf-surface: oklch(0.14 0.013 148); /* dark panel / card bg */
+  --cf-surface-raised: oklch(0.18 0.014 148); /* modals, dropdowns */
+  --cf-border: oklch(0.24 0.015 148); /* subtle borders */
+  --cf-border-strong: oklch(0.34 0.018 148); /* visible dividers */
 
   /* --- Text --- */
-  --cf-ink: oklch(0.93 0.005 258); /* primary text */
-  --cf-ink-muted: oklch(0.62 0.01 258); /* secondary text */
-  --cf-ink-faint: oklch(0.4 0.008 258); /* placeholder, disabled */
+  --cf-ink: oklch(0.95 0.005 148); /* primary text */
+  --cf-ink-muted: oklch(0.65 0.010 148); /* secondary text */
+  --cf-ink-faint: oklch(0.42 0.008 148); /* placeholder, disabled */
 
-  /* --- Brand: authoritative indigo-blue --- */
-  --cf-brand: oklch(0.62 0.19 258);
-  --cf-brand-hover: oklch(0.67 0.19 258);
-  --cf-brand-subtle: oklch(0.2 0.05 258);
-  --cf-brand-muted: oklch(0.35 0.1 258);
+  /* --- Brand: green (matches landing page #4ADE80 / #16A34A) --- */
+  --cf-brand: oklch(0.72 0.20 148);
+  --cf-brand-hover: oklch(0.78 0.20 148);
+  --cf-brand-subtle: oklch(0.16 0.06 148);
+  --cf-brand-muted: oklch(0.32 0.10 148);
 
   /* --- Semantic states --- */
   --cf-success: oklch(0.62 0.15 158);
@@ -133,7 +133,7 @@
   --popover: var(--cf-surface-raised);
   --popover-foreground: var(--cf-ink);
   --primary: var(--cf-brand);
-  --primary-foreground: oklch(0.98 0.005 258);
+  --primary-foreground: oklch(0.10 0.012 148);
   --secondary: var(--cf-surface-raised);
   --secondary-foreground: var(--cf-ink);
   --muted: var(--cf-surface);
@@ -155,7 +155,7 @@
   --sidebar: var(--cf-surface);
   --sidebar-foreground: var(--cf-ink);
   --sidebar-primary: var(--cf-brand);
-  --sidebar-primary-foreground: oklch(0.98 0.005 258);
+  --sidebar-primary-foreground: oklch(0.10 0.012 148);
   --sidebar-accent: var(--cf-brand-subtle);
   --sidebar-accent-foreground: var(--cf-ink);
   --sidebar-border: var(--cf-border);
@@ -184,5 +184,14 @@
   }
   .text-pretty {
     text-wrap: pretty;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -28,8 +28,8 @@ export function LandingNav() {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span className={serif.className} style={{ fontSize: 22, color: "#4ADE80", letterSpacing: "-0.5px" }}>CaseForge</span>
         <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
-          <a href="#how-it-works" style={{ color: "#86EFAC", fontSize: 14, textDecoration: "none", opacity: .8 }}>How it works</a>
-          <a href="#faq" style={{ color: "#86EFAC", fontSize: 14, textDecoration: "none", opacity: .8 }}>FAQ</a>
+          <a href="#how-it-works" className="hidden sm:inline" style={{ color: "#86EFAC", fontSize: 14, textDecoration: "none", opacity: .8 }}>How it works</a>
+          <a href="#faq" className="hidden sm:inline" style={{ color: "#86EFAC", fontSize: 14, textDecoration: "none", opacity: .8 }}>FAQ</a>
           <Link
             href="/sign-in"
             style={{ background: "#4ADE80", color: "#071A0A", fontSize: 14, fontWeight: 700, padding: "8px 20px", borderRadius: 8, textDecoration: "none", letterSpacing: ".2px" }}

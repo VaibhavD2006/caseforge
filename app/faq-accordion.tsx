@@ -1,6 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+
+const E = [0.22, 1, 0.36, 1] as const
 
 const FAQS = [
   {
@@ -12,7 +15,7 @@ const FAQS = [
     a: "Primarily MBB and T2 strategy firms. The case formats, rubrics, and difficulty calibration are tuned to McKinsey, BCG, Bain, Oliver Wyman, Deloitte S&O, and LEK.",
   },
   {
-    q: "Do I need to have case experience to start?",
+    q: "Do I need case experience to start?",
     a: "No. The platform detects where you are and adjusts. Beginners get foundational frameworks; advanced candidates get synthesis-heavy market sizing.",
   },
   {
@@ -33,20 +36,56 @@ export function FaqAccordion() {
       {FAQS.map((faq, i) => (
         <div
           key={i}
-          style={{ background: "#FFFFFF", borderRadius: 12, border: "1px solid #E5E7EB", overflow: "hidden", marginBottom: 2 }}
+          style={{
+            background: "#FFFFFF",
+            borderRadius: 12,
+            border: "1px solid #E5E7EB",
+            overflow: "hidden",
+          }}
         >
           <button
             onClick={() => setOpen(open === i ? null : i)}
-            style={{ width: "100%", textAlign: "left", padding: "20px 24px", background: "none", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "20px 24px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 16,
+            }}
           >
-            <span style={{ color: "#111827", fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>{faq.q}</span>
-            <span style={{ color: "#16A34A", fontSize: 20, fontWeight: 300, flexShrink: 0, transition: "transform .2s", transform: open === i ? "rotate(45deg)" : "none" }}>+</span>
+            <span style={{ color: "#111827", fontSize: 15, fontWeight: 600, lineHeight: 1.4 }}>
+              {faq.q}
+            </span>
+            <motion.span
+              animate={{ rotate: open === i ? 45 : 0 }}
+              transition={{ duration: 0.22, ease: E }}
+              style={{ color: "#16A34A", fontSize: 20, fontWeight: 300, flexShrink: 0, display: "inline-block" }}
+            >
+              +
+            </motion.span>
           </button>
-          {open === i && (
-            <div style={{ padding: "0 24px 20px", color: "#4B5563", fontSize: 15, lineHeight: 1.75 }}>
-              {faq.a}
-            </div>
-          )}
+
+          <AnimatePresence initial={false}>
+            {open === i && (
+              <motion.div
+                key="content"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.26, ease: E }}
+                style={{ overflow: "hidden" }}
+              >
+                <div style={{ padding: "0 24px 20px", color: "#4B5563", fontSize: 15, lineHeight: 1.78 }}>
+                  {faq.a}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ))}
     </div>
