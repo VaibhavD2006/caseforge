@@ -88,6 +88,8 @@ export const interviewTypeEnum = pgEnum("interview_type", [
   "market_sizing",
   "behavioral",
   "drill",
+  "case_math",
+  "pressure_round",
 ])
 
 export const sessionStatusEnum = pgEnum("session_status", [
@@ -149,6 +151,20 @@ export const dimensionEnum = pgEnum("dimension", [
   "confidence",
 ])
 
+export const goalTypeEnum = pgEnum("goal_type", [
+  "score_target",
+  "drill_count",
+  "session_count",
+  "firm_readiness",
+  "dimension_target",
+])
+
+export const goalStatusEnum = pgEnum("goal_status", [
+  "active",
+  "completed",
+  "abandoned",
+])
+
 // ─── CaseForge Entities ───────────────────────────────────────────────────────
 
 export const candidateProfiles = pgTable("candidate_profiles", {
@@ -165,6 +181,12 @@ export const candidateProfiles = pgTable("candidate_profiles", {
   planTier: planTierEnum("plan_tier").notNull().default("free"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  // Screener fields
+  screenerCompleted: boolean("screener_completed").notNull().default(false),
+  behavioralConfidenceRating: integer("behavioral_confidence_rating"),
+  quantComfortRating: integer("quant_comfort_rating"),
+  screenerBaselineResponse: text("screener_baseline_response"),
+  screenerCompletedAt: timestamp("screener_completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })
@@ -266,6 +288,7 @@ export const scorecards = pgTable("scorecards", {
   evaluatorPromptVersion: text("evaluator_prompt_version"),
   reliabilityFlag: boolean("reliability_flag").default(false),
   nextActions: text("next_actions").array().default([]),
+  recruiterSummary: text("recruiter_summary"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
@@ -326,6 +349,53 @@ export const progressSnapshots = pgTable("progress_snapshots", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
+export const goals = pgTable("goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  goalType: goalTypeEnum("goal_type").notNull(),
+  targetValue: decimal("target_value", { precision: 5, scale: 2 }),
+  currentValue: decimal("current_value", { precision: 5, scale: 2 }).default("0"),
+  dimension: dimensionEnum("dimension"),
+  firmStyle: firmStyleEnum("firm_style"),
+  targetDate: date("target_date"),
+  status: goalStatusEnum("goal_status").notNull().default("active"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const drills = pgTable("drills", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: text("title").notNull(),
+  skillFocus: dimensionEnum("skill_focus").notNull(),
+  drillType: drillTypeEnum("drill_type").notNull(),
+  difficulty: difficultyEnum("difficulty").notNull(),
+  prompt: text("prompt").notNull(),
+  expectedTraits: text("expected_traits").array().notNull().default([]),
+  estimatedMinutes: integer("estimated_minutes").notNull().default(5),
+  interviewMode: interviewTypeEnum("interview_mode"),
+  isActive: boolean("is_active").notNull().default(true),
+  timesAttempted: integer("times_attempted").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
+export const drillAttempts = pgTable("drill_attempts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  drillId: uuid("drill_id")
+    .notNull()
+    .references(() => drills.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  response: text("response").notNull(),
+  score: decimal("score", { precision: 4, scale: 2 }),
+  feedback: text("feedback"),
+  improvementNote: text("improvement_note"),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+})
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect
@@ -341,3 +411,6 @@ export type DrillRecommendation = typeof drillRecommendations.$inferSelect
 export type ProgressSnapshot = typeof progressSnapshots.$inferSelect
 export type PromptTemplate = typeof promptTemplates.$inferSelect
 export type RubricConfig = typeof rubricConfigs.$inferSelect
+export type Goal = typeof goals.$inferSelect
+export type Drill = typeof drills.$inferSelect
+export type DrillAttempt = typeof drillAttempts.$inferSelect

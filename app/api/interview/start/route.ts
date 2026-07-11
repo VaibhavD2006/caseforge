@@ -6,6 +6,7 @@ import {
   selectCase,
   streamInterviewerOpening,
 } from "@/lib/ai/interview"
+import { firmStyleEnum, interviewTypeEnum } from "@/lib/db/schema"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -19,8 +20,8 @@ export async function POST(req: Request) {
     interviewType = "case",
     templateId,
   } = body as {
-    firmStyle: "mbb" | "big4" | "boutique" | "generic"
-    interviewType: "case" | "market_sizing" | "behavioral" | "drill"
+    firmStyle: (typeof firmStyleEnum.enumValues)[number]
+    interviewType: (typeof interviewTypeEnum.enumValues)[number]
     templateId?: string
   }
 

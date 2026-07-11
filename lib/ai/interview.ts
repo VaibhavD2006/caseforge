@@ -1,6 +1,6 @@
 import { chatStream, type Message } from "./providers"
 import { db } from "@/lib/db"
-import { promptTemplates, caseLibrary, interviewTemplates } from "@/lib/db/schema"
+import { promptTemplates, caseLibrary, interviewTemplates, firmStyleEnum, interviewTypeEnum } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
 export async function getInterviewerSystemPrompt(
@@ -30,10 +30,10 @@ function getDefaultSystemPrompt(firmStyle: string, interviewType: string): strin
 }
 
 export async function selectCase(
-  firmStyle: "mbb" | "big4" | "boutique" | "generic",
-  interviewType: "case" | "market_sizing" | "behavioral" | "drill"
+  firmStyle: (typeof firmStyleEnum.enumValues)[number],
+  interviewType: (typeof interviewTypeEnum.enumValues)[number]
 ): Promise<typeof caseLibrary.$inferSelect | null> {
-  if (interviewType === "behavioral") return null
+  if (interviewType === "behavioral" || interviewType === "case_math" || interviewType === "pressure_round") return null
 
   const cases = await db
     .select()

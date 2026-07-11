@@ -1,14 +1,22 @@
-import "dotenv/config"
-import { db } from "@/lib/db"
+import { config } from "dotenv"
+config({ path: ".env.local" })
+
+// Imports below happen after env is loaded (CJS hoisting issue workaround: inline db creation)
+import { drizzle } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import * as schema from "@/lib/db/schema"
 import {
   interviewTemplates,
   caseLibrary,
   promptTemplates,
   rubricConfigs,
+  drills,
 } from "@/lib/db/schema"
 import scoringDimensions from "@/config/rubrics/scoring-dimensions.json"
 
 async function seed() {
+  const client = postgres(process.env.DATABASE_URL!, { prepare: false })
+  const db = drizzle(client, { schema })
   console.log("Seeding database...")
 
   // ─── Rubric Config ───────────────────────────────────────────────────────────
@@ -370,6 +378,43 @@ Behavioral rules:
 - Push for personal ownership: "What specifically did you do?"
 - Ask about outcomes: "What was the result, and how did you measure it?"
 - Cover 3-4 competencies across the session.` },
+    {
+      name: "interviewer_mbb_case_math_v1",
+      type: "interviewer_system" as const,
+      content: `You are a McKinsey-style case interviewer running a CASE MATH drill.
+
+Your sole focus is quantitative reasoning. Present one focused math problem at a time.
+Format: Give a clear setup with numbers, ask for a calculation, then evaluate their approach.
+
+Rules:
+- Ask them to walk through their math step-by-step out loud
+- Challenge sloppy estimation ("why did you assume 10%?")
+- Push for a sanity check after every answer ("does that number feel right?")
+- If they get the right answer with bad process, ask them to re-explain their method
+- Keep each problem to 3-4 minutes max, then move to a new one
+- After 3 problems, give a brief summary of their quantitative strengths and gaps
+
+Opening: "I'm going to run you through three quantitative problems. Walk me through your math out loud as you go — I care as much about your process as your answer. Ready?"`,
+    },
+    {
+      name: "interviewer_mbb_pressure_round_v1",
+      type: "interviewer_system" as const,
+      content: `You are a senior McKinsey partner running a high-pressure final round interview.
+
+Your job is to stress-test the candidate's composure, decisiveness, and ability to think under fire.
+
+Rules:
+- Push back on every recommendation, even correct ones ("but why wouldn't the competitor just copy that?")
+- Ask for specificity relentlessly ("what exactly do you mean by 'improve margins'?")
+- Interrupt if they are rambling more than 30 seconds without a clear point
+- Set artificial time pressure ("you have 60 seconds to give me your recommendation")
+- If they back down too easily from correct reasoning, push harder ("I'm not convinced — defend it")
+- Reward candidates who push back respectfully with logic, not ones who capitulate
+
+Tone: Direct, demanding, respectful but not warm. This is a final-round pressure test.
+
+Opening: "I've read your slides. I have 20 minutes. Walk me through your recommendation — and I'll push back on everything."`,
+    },
   ]
 
   const evaluatorPrompts = [
@@ -573,6 +618,43 @@ Allowed tag keys for confidence: confidence_hesitant, confidence_backtracking, c
     .onConflictDoNothing()
 
   console.log("✓ 19 prompt templates seeded (12 interviewer + 7 evaluator)")
+
+  // ─── Drill Library (25 drills, 5 per skill dimension) ────────────────────────
+  const drillData = [
+    // STRUCTURE (5)
+    { title: "MECE Profitability Breakdown", skillFocus: "structure" as const, drillType: "mini_case" as const, difficulty: "easy" as const, estimatedMinutes: 5, prompt: "Your client's profitability has declined. In 60 seconds, give me a MECE framework to diagnose the problem. Do not analyze yet — just the framework.", expectedTraits: ["Mutually exclusive buckets (e.g., revenue vs cost)", "Collectively exhaustive coverage", "No overlap between categories", "2-3 levels of decomposition"] },
+    { title: "Market Entry Structure", skillFocus: "structure" as const, drillType: "mini_case" as const, difficulty: "medium" as const, estimatedMinutes: 7, prompt: "Structure a framework to evaluate whether a European apparel brand should enter the Indian market. Give me a 2-level MECE breakdown before doing any analysis.", expectedTraits: ["Market attractiveness pillar", "Competitive landscape pillar", "Internal capabilities pillar", "All pillars are MECE and exhaustive"] },
+    { title: "Operations Improvement Structure", skillFocus: "structure" as const, drillType: "mini_case" as const, difficulty: "medium" as const, estimatedMinutes: 6, prompt: "A logistics company's delivery times have increased 30%. Structure your approach to diagnose the root cause. Give me your complete framework before diving into any specifics.", expectedTraits: ["People / Process / Technology breakdown or equivalent", "Covers both internal and external factors", "Explicit prioritization of where to look first"] },
+    { title: "Growth Strategy Framework", skillFocus: "structure" as const, drillType: "mini_case" as const, difficulty: "hard" as const, estimatedMinutes: 8, prompt: "A $500M B2B software company wants to grow revenue by 40% in 3 years. Structure an exhaustive set of growth levers before recommending anything.", expectedTraits: ["Organic vs inorganic split", "Revenue growth levers (new customers, retention, upsell)", "Market expansion options", "Clear prioritization rationale"] },
+    { title: "Cost Reduction MECE Tree", skillFocus: "structure" as const, drillType: "math_exercise" as const, difficulty: "easy" as const, estimatedMinutes: 5, prompt: "A retailer needs to cut costs by $50M. Give me a MECE cost tree covering all possible cost buckets. Be exhaustive — I want every major cost category covered with no overlap.", expectedTraits: ["COGS, SG&A, CapEx clearly distinguished", "Sub-buckets within each major category", "No bucket appears twice", "Collectively exhaustive — nothing major is missing"] },
+    // HYPOTHESIS (5)
+    { title: "Revenue Decline Hypothesis", skillFocus: "hypothesis" as const, drillType: "mini_case" as const, difficulty: "easy" as const, estimatedMinutes: 5, prompt: "A consumer goods company's revenue dropped 20% in 6 months. Before asking any clarifying questions, give me your top hypothesis for the most likely cause and explain your reasoning.", expectedTraits: ["Specific and testable hypothesis (not just 'revenue or cost')", "Grounded in business logic", "Explains which data would confirm or refute it", "Prioritizes one hypothesis over others with rationale"] },
+    { title: "Churn Root Cause Hypothesis", skillFocus: "hypothesis" as const, drillType: "mini_case" as const, difficulty: "medium" as const, estimatedMinutes: 6, prompt: "A SaaS company's monthly churn jumped from 2% to 5% after a product update three months ago. State your top hypothesis and the one piece of data you'd want most to test it.", expectedTraits: ["Hypothesis is specific and directional", "Connects the product update to the churn driver logically", "Names one specific diagnostic data point", "Eliminates at least one alternative hypothesis"] },
+    { title: "Market Share Loss Hypothesis", skillFocus: "hypothesis" as const, drillType: "mini_case" as const, difficulty: "medium" as const, estimatedMinutes: 7, prompt: "A regional grocery chain lost 8 points of market share over two years. The market itself grew 5% annually during that period. State your leading hypothesis before any data review.", expectedTraits: ["Distinguishes between losing existing customers vs failing to win new ones", "Considers competitive dynamic vs own-store issues", "Testable with specific data", "Shows logical deduction rather than generic enumeration"] },
+    { title: "Hospital Cost Overrun Hypothesis", skillFocus: "hypothesis" as const, drillType: "mini_case" as const, difficulty: "hard" as const, estimatedMinutes: 8, prompt: "A hospital's cost per patient has risen 25% in 18 months. Staffing is flat, volumes are flat, and there have been no major capital projects. Lead with your hypothesis and explain your logic chain.", expectedTraits: ["Investigates input costs (supplies, drugs, energy)", "Considers payer mix shift", "Considers acuity change — are patients sicker?", "Clear logical chain from facts to hypothesis"] },
+    { title: "New Product Underperformance Hypothesis", skillFocus: "hypothesis" as const, drillType: "mini_case" as const, difficulty: "easy" as const, estimatedMinutes: 5, prompt: "A company launched a new product six months ago. Sales are 40% below forecast. State your hypothesis about why and what you'd want to check first.", expectedTraits: ["Distinguishes between demand problem vs supply/distribution problem vs pricing", "Considers forecast accuracy as a factor", "Names specific diagnostic questions", "Clear prioritization of most likely cause"] },
+    // QUANTITATIVE (5)
+    { title: "15% of 240", skillFocus: "quantitative" as const, drillType: "math_exercise" as const, difficulty: "easy" as const, estimatedMinutes: 2, prompt: "Without a calculator: A retailer's margin is 15% on $240 of revenue per transaction. What is the gross profit per transaction? Show your calculation clearly and explain your approach.", expectedTraits: ["Correct answer: $36", "Clear step-by-step verbal math", "Uses a clean decomposition (10% = $24, 5% = $12)", "Checks the answer"] },
+    { title: "Market Size Estimation Math", skillFocus: "quantitative" as const, drillType: "math_exercise" as const, difficulty: "medium" as const, estimatedMinutes: 5, prompt: "Estimate the annual revenue of the US gym industry. Show your math step by step, state each assumption explicitly, and provide a sanity check at the end.", expectedTraits: ["US population → adult population → gym member %%", "Average monthly membership fee × 12", "Clear assumptions stated before each calculation", "Sanity check vs known data points (e.g., Planet Fitness annual revenue)"] },
+    { title: "Break-Even Calculation", skillFocus: "quantitative" as const, drillType: "math_exercise" as const, difficulty: "medium" as const, estimatedMinutes: 5, prompt: "A new product has fixed costs of $2M per year and a contribution margin of $40 per unit. How many units must be sold annually to break even? Now: if we want to earn $500K in profit, what's the target volume?", expectedTraits: ["Break-even: $2M / $40 = 50,000 units", "Profit target: ($2M + $500K) / $40 = 62,500 units", "Verbal explanation of the formula logic", "Sanity check on the answer"] },
+    { title: "Compounding Revenue Growth", skillFocus: "quantitative" as const, drillType: "math_exercise" as const, difficulty: "hard" as const, estimatedMinutes: 6, prompt: "A company has $100M revenue and is growing at 25% per year. Approximately what will revenue be in 3 years? Use the Rule of 72 or another estimation method — no need for exact compounding.", expectedTraits: ["Year 1: ~$125M, Year 2: ~$156M, Year 3: ~$195M (or Rule of 72 approximation)", "Explains estimation method used", "Acknowledges approximation", "Sanity checks using a different approach"] },
+    { title: "Unit Economics Analysis", skillFocus: "quantitative" as const, drillType: "math_exercise" as const, difficulty: "hard" as const, estimatedMinutes: 8, prompt: "A subscription company has: $60 average monthly revenue per customer, 15% monthly churn, and $180 CAC. Calculate LTV, LTV/CAC ratio, and payback period. Explain whether this is a healthy unit economics profile.", expectedTraits: ["LTV = $60 / 15% = $400", "LTV/CAC = $400 / $180 = 2.2x (below healthy 3x benchmark)", "Payback = $180 / $60 = 3 months", "Correct interpretation: LTV/CAC is marginal; needs improvement"] },
+    // SYNTHESIS (5)
+    { title: "One-Minute Recommendation", skillFocus: "synthesis" as const, drillType: "synthesis_prompt" as const, difficulty: "easy" as const, estimatedMinutes: 4, prompt: "You've just analyzed a fast food chain that is losing $12M annually. Key findings: (1) beverage margin is 3x food margin, (2) drive-through accounts for 70% of orders, (3) average ticket size is $8 vs competitor average of $11. Give me your recommendation in 60 seconds — lead with the conclusion.", expectedTraits: ["Leads with recommendation, not analysis", "Recommendation is specific and actionable", "Ties recommendation to the highest-impact finding", "Mentions implementation or risk briefly"] },
+    { title: "Elevator Pitch Synthesis", skillFocus: "synthesis" as const, drillType: "synthesis_prompt" as const, difficulty: "medium" as const, estimatedMinutes: 5, prompt: "You're in an elevator with the CEO. You have 30 seconds. Based on these three findings — (1) our net promoter score dropped 15 points, (2) our churn is 3x higher among customers who contact support, (3) support response time averages 48 hours — what do you tell her?", expectedTraits: ["One crisp recommendation (reduce support response time)", "Explains the data linkage in one sentence", "States expected business impact", "No more than 3 sentences total"] },
+    { title: "Conflicting Data Synthesis", skillFocus: "synthesis" as const, drillType: "synthesis_prompt" as const, difficulty: "hard" as const, estimatedMinutes: 8, prompt: "You have two conflicting signals: revenue is growing 20% YoY, but cash flow is deeply negative and getting worse. Synthesize these into a clear recommendation for what the CEO should focus on first.", expectedTraits: ["Identifies the tension explicitly", "Resolves the conflict with a clear POV (e.g., revenue growth is masking margin erosion)", "Leads with recommendation, then explains the reasoning", "Acknowledges what's still uncertain"] },
+    { title: "Three-Finding Synthesis", skillFocus: "synthesis" as const, drillType: "synthesis_prompt" as const, difficulty: "medium" as const, estimatedMinutes: 6, prompt: "Synthesize these three findings into a single clear recommendation: (1) The client's largest product line has shrinking margins. (2) A competitor just launched a direct substitute at 20% lower price. (3) The client has high brand loyalty among customers over 45 but low loyalty with under-35 customers.", expectedTraits: ["Single clear recommendation (not three separate actions)", "Ties all three findings into one coherent narrative", "Addresses the most urgent issue first", "Recommends a specific strategic direction"] },
+    { title: "Partner-Ready Final Answer", skillFocus: "synthesis" as const, drillType: "synthesis_prompt" as const, difficulty: "hard" as const, estimatedMinutes: 8, prompt: "The partner walks in. You have 90 seconds to tell her: Should this pharmaceutical company acquire a competitor for $2B? Key facts: Target has $300M revenue, 40% EBITDA margins, and a drug pipeline with one high-probability approval. Your client has $3B in cash and a strategic gap in oncology.", expectedTraits: ["Leads with yes/no recommendation immediately", "Uses the most compelling data points to support", "Acknowledges the main risk in one sentence", "Ends with a clear next step or condition"] },
+    // COMMUNICATION (5)
+    { title: "Signposted Answer Structure", skillFocus: "communication" as const, drillType: "communication_exercise" as const, difficulty: "easy" as const, estimatedMinutes: 5, prompt: "Answer this question, using explicit signposting: 'Why do you want to work in consulting?' You must say 'first,' 'second,' and 'finally' at the appropriate points, and your answer should be no more than 90 seconds when spoken.", expectedTraits: ["Uses explicit signposting (first/second/finally)", "Each section is distinct and purposeful", "Total length is appropriate (not too long)", "Answer feels natural, not robotic"] },
+    { title: "Explain a Complex Concept Simply", skillFocus: "communication" as const, drillType: "communication_exercise" as const, difficulty: "medium" as const, estimatedMinutes: 5, prompt: "Explain what 'contribution margin' is to a client who is a founder with no finance background. Be clear, simple, and concrete. Use an example. Aim for 60 seconds.", expectedTraits: ["Avoids jargon or defines terms immediately", "Uses a concrete, relatable example", "One clear sentence stating what it is", "Does not over-explain or over-complicate"] },
+    { title: "Pushback Response", skillFocus: "communication" as const, drillType: "communication_exercise" as const, difficulty: "medium" as const, estimatedMinutes: 5, prompt: "I'm going to push back on you. Your job is to respond confidently without being defensive. Here's my pushback: 'I don't think your cost estimate makes sense. You're assuming a 20% margin but our historical margins have been 12%. Why should I trust your number?'", expectedTraits: ["Acknowledges the pushback without caving", "Explains the rationale for the assumption", "Offers to revisit if the client provides better data", "Maintains composure — no apologizing unnecessarily"] },
+    { title: "Concise Email Summary", skillFocus: "communication" as const, drillType: "communication_exercise" as const, difficulty: "medium" as const, estimatedMinutes: 7, prompt: "Write a 5-sentence email to a CFO summarizing this finding: The company's marketing spend has doubled over 2 years, but customer acquisition cost has only improved 10%, suggesting diminishing returns on marketing investment. Recommend a next step.", expectedTraits: ["Opens with the key finding, not background", "5 sentences or fewer", "Specific recommendation in the last sentence", "No jargon, professional but direct tone"] },
+    { title: "Tell Me About Yourself (Consulting Pitch)", skillFocus: "communication" as const, drillType: "communication_exercise" as const, difficulty: "easy" as const, estimatedMinutes: 4, prompt: "Give me a 60-second 'tell me about yourself' pitch tailored for a consulting interview. Structure it as: where you've been, what you've learned, and why consulting now. No filler, no rambling.", expectedTraits: ["Chronological narrative that is easy to follow", "Each section (past/present/future) clearly delineated", "'Why consulting' is specific and genuine, not generic", "Total pitch is 60 seconds or less"] },
+  ]
+
+  await db.insert(drills).values(drillData).onConflictDoNothing()
+  console.log(`✓ ${drillData.length} drills seeded`)
   console.log("Seeding complete.")
 }
 

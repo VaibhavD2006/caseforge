@@ -4,6 +4,8 @@ import {
   transcripts,
   caseLibrary,
   interviewTemplates,
+  firmStyleEnum,
+  interviewTypeEnum,
 } from "@/lib/db/schema"
 import { eq, desc } from "drizzle-orm"
 
@@ -11,8 +13,8 @@ export async function createSession(data: {
   userId: string
   templateId?: string
   caseId?: string
-  firmStyle: "mbb" | "big4" | "boutique" | "generic"
-  interviewType: "case" | "market_sizing" | "behavioral" | "drill"
+  firmStyle: (typeof firmStyleEnum.enumValues)[number]
+  interviewType: (typeof interviewTypeEnum.enumValues)[number]
 }) {
   const [session] = await db.insert(interviewSessions).values(data).returning()
   return session!
