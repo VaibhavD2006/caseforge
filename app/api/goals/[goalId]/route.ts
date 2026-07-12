@@ -6,7 +6,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ go
   const session = await requireAuth()
   const { goalId } = await params
   const body = await req.json()
-  const updated = await updateGoal(goalId, session.user.id!, body)
+  const { title, status, targetValue, targetDate } = body
+  const updated = await updateGoal(goalId, session.user.id!, { title, status, targetValue, targetDate })
   return NextResponse.json(updated)
 }
 

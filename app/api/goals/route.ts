@@ -11,6 +11,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await requireAuth()
   const body = await req.json()
-  const goal = await createGoal({ userId: session.user.id!, ...body })
+  const { title, goalType, targetValue, dimension, firmStyle, targetDate } = body
+  const goal = await createGoal({ userId: session.user.id!, title, goalType, targetValue, dimension, firmStyle, targetDate })
   return NextResponse.json(goal, { status: 201 })
 }
