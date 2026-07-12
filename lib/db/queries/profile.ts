@@ -11,16 +11,20 @@ export async function getProfileByUserId(userId: string) {
   return profile ?? null
 }
 
-export async function createProfile(
-  userId: string,
-  data: {
-    targetFirms?: string[]
-    targetRole?: string
-    experienceLevel?: "undergrad" | "mba" | "professional" | "career_switcher"
-    interviewDate?: string
-    selfAssessmentScores?: Record<string, number>
-  }
-) {
+type ProfileData = {
+  targetFirms?: string[]
+  targetRole?: string
+  experienceLevel?: "undergrad" | "mba" | "professional" | "career_switcher"
+  interviewDate?: string
+  selfAssessmentScores?: Record<string, number>
+  screenerCompleted?: boolean
+  behavioralConfidenceRating?: number
+  quantComfortRating?: number
+  screenerBaselineResponse?: string
+  screenerCompletedAt?: Date
+}
+
+export async function createProfile(userId: string, data: ProfileData) {
   const [profile] = await db
     .insert(candidateProfiles)
     .values({
@@ -30,27 +34,20 @@ export async function createProfile(
       experienceLevel: data.experienceLevel ?? null,
       interviewDate: data.interviewDate ?? null,
       selfAssessmentScores: data.selfAssessmentScores ?? null,
+      screenerCompleted: data.screenerCompleted ?? false,
+      behavioralConfidenceRating: data.behavioralConfidenceRating ?? null,
+      quantComfortRating: data.quantComfortRating ?? null,
+      screenerBaselineResponse: data.screenerBaselineResponse ?? null,
+      screenerCompletedAt: data.screenerCompletedAt ?? null,
     })
     .returning()
   return profile!
 }
 
-export async function updateProfile(
-  userId: string,
-  data: {
-    targetFirms?: string[]
-    targetRole?: string
-    experienceLevel?: "undergrad" | "mba" | "professional" | "career_switcher"
-    interviewDate?: string
-    selfAssessmentScores?: Record<string, number>
-  }
-) {
+export async function updateProfile(userId: string, data: ProfileData) {
   const [profile] = await db
     .update(candidateProfiles)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
+    .set({ ...data, updatedAt: new Date() })
     .where(eq(candidateProfiles.userId, userId))
     .returning()
   return profile ?? null

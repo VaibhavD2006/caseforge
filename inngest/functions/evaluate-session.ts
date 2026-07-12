@@ -9,7 +9,7 @@ import {
   caseLibrary,
 } from "@/lib/db/schema"
 import { eq, sql } from "drizzle-orm"
-import { evaluateSession } from "@/lib/ai/evaluator"
+import { evaluateSession, generateRecruiterSummary } from "@/lib/ai/evaluator"
 import { computeReadinessLevel, computeTier } from "@/lib/utils/readiness"
 import weaknessTaxonomy from "@/config/rubrics/weakness-taxonomy.json"
 
@@ -84,6 +84,16 @@ export const evaluateSessionFn = inngest.createFunction(
         .update(interviewSessions)
         .set({ status: "evaluated" })
         .where(eq(interviewSessions.id, sessionId))
+    })
+
+    // 4.5 Generate recruiter summary
+    await step.run("generate-recruiter-summary", async () => {
+      const turns = transcript.turns as Array<{ role: string; content: string }>
+      const summary = await generateRecruiterSummary(turns, scorecardData)
+      await db
+        .update(scorecards)
+        .set({ recruiterSummary: summary })
+        .where(eq(scorecards.sessionId, sessionId))
     })
 
     // 5. Update weakness tags

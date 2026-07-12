@@ -1,4 +1,4 @@
-import { jsonCompletion, type Message } from "./providers"
+import { jsonCompletion, chatCompletion, type Message } from "./providers"
 import { db } from "@/lib/db"
 import { promptTemplates } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
@@ -213,7 +213,42 @@ export async function evaluateSession(
     weaknessTagKeys,
     nextActions,
     reliabilityFlag,
-    evaluatorModel: process.env.OLLAMA_MODEL ?? "llama3.2",
+    evaluatorModel: process.env.GEMINI_MODEL ?? "gemini-2.0-flash",
     evaluatorPromptVersion: "v1",
   }
+}
+
+export async function generateRecruiterSummary(
+  turns: Turn[],
+  scorecard: ScorecardResult
+): Promise<string> {
+  const transcript = turns.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
+  const weakDims = Object.entries(scorecard.dimensionScores)
+    .filter(([, v]) => v.score <= 6)
+    .map(([k]) => k.replace("_", " "))
+    .join(", ")
+  const strongDims = Object.entries(scorecard.dimensionScores)
+    .filter(([, v]) => v.score >= 7)
+    .map(([k]) => k.replace("_", " "))
+    .join(", ")
+
+  const messages: Message[] = [
+    {
+      role: "user",
+      content: `You are a senior consulting interviewer writing a brief post-interview evaluation note. Write a single paragraph (3-5 sentences) in first-person past tense as if you just finished interviewing this candidate. Be professional, specific, and honest — this is an internal note, not feedback to the candidate.
+
+Overall score: ${scorecard.overallScore}/10
+Strong dimensions: ${strongDims || "none notable"}
+Weak dimensions: ${weakDims || "none notable"}
+Top strengths: ${scorecard.topStrengths.join("; ")}
+Top weaknesses: ${scorecard.topWeaknesses.join("; ")}
+
+Transcript excerpt (first and last few exchanges):
+${[...turns.slice(0, 4), ...turns.slice(-4)].map((t) => `[${t.role}]: ${t.content.slice(0, 200)}`).join("\n\n")}
+
+Write the evaluator note now. Do not include any headers or labels — just the paragraph.`,
+    },
+  ]
+
+  return chatCompletion(messages)
 }

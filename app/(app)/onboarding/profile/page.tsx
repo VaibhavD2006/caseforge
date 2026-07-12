@@ -62,7 +62,7 @@ export default function OnboardingProfilePage() {
         throw new Error("Failed to save profile")
       }
 
-      router.push("/dashboard")
+      router.push("/onboarding/screener")
     } catch {
       setError("Something went wrong. Please try again.")
       setLoading(false)
