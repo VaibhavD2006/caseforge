@@ -35,5 +35,10 @@ export async function GET(
     .where(eq(scorecards.sessionId, sessionId))
     .limit(1)
 
-  return NextResponse.json({ status: "evaluated", scorecard: scorecard ?? null })
+  return NextResponse.json({
+    status: "evaluated",
+    scorecard: scorecard ?? null,
+    firmId: interviewSession.firmId,
+    interviewType: interviewSession.interviewType,
+  })
 }

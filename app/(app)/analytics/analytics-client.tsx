@@ -1,17 +1,22 @@
 "use client"
 
 import Link from "next/link"
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-import { BarChart2 } from "lucide-react"
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart2, Target, TrendingUp } from "lucide-react"
+import { FIRM_CONFIGS } from "@/config/firms/firm-styles"
 
 const DIM_LABELS: Record<string, string> = {
   structure: "Structure",
+  framing: "Framing",
   hypothesis: "Hypothesis",
   quantitative: "Quantitative",
   business_judgment: "Business Judgment",
+  creativity: "Creativity",
   synthesis: "Synthesis",
+  recommendation_quality: "Recommendation",
   communication: "Communication",
   confidence: "Confidence",
+  presence: "Presence",
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -19,6 +24,8 @@ const MODE_LABELS: Record<string, string> = {
   market_sizing: "Market Sizing",
   behavioral: "Behavioral",
   drill: "Drill",
+  case_math: "Case Math",
+  pressure_round: "Pressure Round",
 }
 
 type Props = {
@@ -29,6 +36,9 @@ type Props = {
   weaknesses: { label: string; count: number; dimension: string }[]
   totalSessions: number
   evaluatedSessions: number
+  firmReadiness?: Record<string, number>
+  targetFirms?: string[]
+  scoreVelocity?: number
 }
 
 const CHART_GREEN = "oklch(0.72 0.20 148)"
@@ -45,7 +55,9 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
   )
 }
 
-export default function AnalyticsClient({ scoreTrend, avgDimensions, modeAvg, sessionFreq, weaknesses, totalSessions, evaluatedSessions }: Props) {
+const PIE_COLORS = ["oklch(0.62_0.15_158)", "oklch(0.72_0.15_78)", "oklch(0.60_0.18_22)"]
+
+export default function AnalyticsClient({ scoreTrend, avgDimensions, modeAvg, sessionFreq, weaknesses, totalSessions, evaluatedSessions, firmReadiness, targetFirms, scoreVelocity }: Props) {
   const dimData = Object.entries(avgDimensions).map(([d, v]) => ({ dim: DIM_LABELS[d] ?? d, score: v }))
 
   if (evaluatedSessions === 0) {
@@ -155,6 +167,48 @@ export default function AnalyticsClient({ scoreTrend, avgDimensions, modeAvg, se
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+
+          {/* Firm readiness */}
+          {firmReadiness && Object.keys(firmReadiness).length > 0 && (
+            <ChartCard title="Target firm readiness">
+              <div className="space-y-3">
+                {Object.entries(firmReadiness).map(([firmId, score], i) => {
+                  const firmConfig = FIRM_CONFIGS[firmId as keyof typeof FIRM_CONFIGS]
+                  if (!firmConfig) return null
+                  return (
+                    <div key={firmId} className="bg-surface border border-border-subtle rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-ink text-sm font-medium">{firmConfig.displayName}</span>
+                        <span className={`text-lg font-bold ${score >= 70 ? "text-[oklch(0.62_0.15_158)]" : score >= 50 ? "text-[oklch(0.72_0.15_78)]" : "text-[oklch(0.60_0.18_22)]"}`}>
+                          {score}/100
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-border-subtle overflow-hidden">
+                        <div className={`h-2 rounded-full transition-all duration-500 ${score >= 70 ? "bg-[oklch(0.62_0.15_158)]" : score >= 50 ? "bg-[oklch(0.72_0.15_78)]" : "bg-[oklch(0.60_0.18_22)]"}`} style={{ width: `${score}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </ChartCard>
+          )}
+
+          {/* Score velocity */}
+          {scoreVelocity !== undefined && (
+            <ChartCard title="Score velocity (last 5 sessions)">
+              <div className="text-center py-4">
+                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${scoreVelocity >= 0 ? "bg-[oklch(0.12_0.04_158)]" : "bg-[oklch(0.12_0.04_22)]"}`}>
+                  <TrendingUp className="w-4 h-4" style={scoreVelocity >= 0 ? { color: "oklch(0.62_0.15_158)" } : { color: "oklch(0.60_0.18_22)" }} />
+                  <span className={`font-semibold`} style={scoreVelocity >= 0 ? { color: "oklch(0.62_0.15_158)" } : { color: "oklch(0.60_0.18_22)" }}>
+                    {scoreVelocity > 0 ? `+${scoreVelocity.toFixed(1)}` : `${scoreVelocity.toFixed(1)}`} points/session
+                  </span>
+                </div>
+                <p className="text-ink-faint text-xs mt-2">
+                  {scoreVelocity > 0 ? "Improving" : scoreVelocity < 0 ? "Needs attention" : "Steady"} progress
+                </p>
+              </div>
+            </ChartCard>
+          )}
         </div>
 
         {/* Weakness recurrence */}

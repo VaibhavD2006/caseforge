@@ -2,12 +2,16 @@ import { chatStream, type Message } from "./providers"
 import { db } from "@/lib/db"
 import { promptTemplates, caseLibrary, interviewTemplates, firmStyleEnum, interviewTypeEnum } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { FIRM_CONFIGS, type FirmId } from "@/config/firms/firm-styles"
 
 export async function getInterviewerSystemPrompt(
-  firmStyle: string,
+  firmId: string,
   interviewType: string,
   caseContext?: string
 ): Promise<string> {
+  const firmConfig = FIRM_CONFIGS[firmId as FirmId]
+  const firmStyle = firmConfig?.firmFamily ?? "generic"
+
   const promptName = `interviewer_${firmStyle}_${interviewType}_v1`
 
   const [template] = await db
@@ -16,7 +20,14 @@ export async function getInterviewerSystemPrompt(
     .where(eq(promptTemplates.name, promptName))
     .limit(1)
 
-  let systemPrompt = template?.content ?? getDefaultSystemPrompt(firmStyle, interviewType)
+  // Start with firm-specific system prompt modifier
+  let systemPrompt = firmConfig?.systemPromptModifier ?? getDefaultSystemPrompt(firmStyle, interviewType)
+
+  // Append template content if available
+  const templateContent = template?.content
+  if (templateContent) {
+    systemPrompt = templateContent + "\n\n" + systemPrompt
+  }
 
   if (caseContext) {
     systemPrompt += `\n\nCase context:\n${caseContext}`
@@ -80,10 +91,12 @@ export async function* streamInterviewerOpening(
 
 export async function* streamInterviewerResponse(
   systemPrompt: string,
-  conversationHistory: Message[]
+  conversationHistory: Message[],
+  directorBlock?: string
 ): AsyncGenerator<string> {
+  const fullPrompt = directorBlock ? systemPrompt + directorBlock : systemPrompt
   const messages: Message[] = [
-    { role: "system", content: systemPrompt },
+    { role: "system", content: fullPrompt },
     ...conversationHistory,
   ]
 

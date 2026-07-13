@@ -7,6 +7,7 @@ import {
   streamInterviewerOpening,
 } from "@/lib/ai/interview"
 import { firmStyleEnum, interviewTypeEnum } from "@/lib/db/schema"
+import { FIRM_CONFIGS, type FirmId, normalizeFirmId } from "@/config/firms/firm-styles"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -16,21 +17,29 @@ export async function POST(req: Request) {
 
   const body = await req.json()
   const {
-    firmStyle = "generic",
+    firmId = "mckinsey",
     interviewType = "case",
     templateId,
   } = body as {
-    firmStyle: (typeof firmStyleEnum.enumValues)[number]
+    firmId?: FirmId
     interviewType: (typeof interviewTypeEnum.enumValues)[number]
     templateId?: string
   }
 
-  // Select a case (null for behavioral)
+  const normalizedFirmId = normalizeFirmId(firmId)
+  if (!normalizedFirmId) {
+    return NextResponse.json({ error: `Invalid firmId: ${firmId}` }, { status: 400 })
+  }
+
+  const firmConfig = FIRM_CONFIGS[normalizedFirmId]
+  const firmStyle = firmConfig.firmFamily
+
+  // Select a case (null for behavioral, case_math, pressure_round)
   const selectedCase = await selectCase(firmStyle, interviewType)
 
-  // Build system prompt
+  // Build system prompt with firm-specific modifier
   const caseContext = selectedCase?.contextText
-  const systemPrompt = await getInterviewerSystemPrompt(firmStyle, interviewType, caseContext)
+  const systemPrompt = await getInterviewerSystemPrompt(normalizedFirmId, interviewType, caseContext)
 
   // Create session record
   const interviewSession = await createSession({
@@ -38,6 +47,7 @@ export async function POST(req: Request) {
     templateId: templateId ?? undefined,
     caseId: selectedCase?.id ?? undefined,
     firmStyle,
+    firmId: normalizedFirmId,
     interviewType,
   })
 
@@ -55,10 +65,11 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     sessionId: interviewSession.id,
+    firmId: normalizedFirmId,
     firmStyle,
     interviewType,
     caseTitle: selectedCase?.title ?? null,
     openingMessage,
-    systemPromptRef: `interviewer_${firmStyle}_${interviewType}_v1`,
+    systemPromptRef: `interviewer_${normalizedFirmId}_${interviewType}_v1`,
   })
 }

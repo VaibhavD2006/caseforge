@@ -15,6 +15,7 @@ export async function createSession(data: {
   caseId?: string
   firmStyle: (typeof firmStyleEnum.enumValues)[number]
   interviewType: (typeof interviewTypeEnum.enumValues)[number]
+  firmId?: string
 }) {
   const [session] = await db.insert(interviewSessions).values(data).returning()
   return session!

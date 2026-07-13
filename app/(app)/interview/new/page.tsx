@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation"
 import { PlayCircle } from "lucide-react"
 import { motion } from "framer-motion"
 import { FadeUp, StaggerList, StaggerItem } from "@/components/motion"
+import { FIRM_CONFIGS, type FirmId } from "@/config/firms/firm-styles"
 
-const FIRM_OPTIONS = [
-  { value: "mbb", label: "MBB", description: "McKinsey, BCG, Bain — hypothesis-driven, rigorous" },
-  { value: "big4", label: "Big Four", description: "Deloitte, PwC, EY, KPMG — broader, practical focus" },
-  { value: "boutique", label: "Boutique", description: "Boutique strategy — creative, deep-dive" },
-  { value: "generic", label: "General", description: "Standard consulting interview practice" },
-]
+const FIRM_OPTIONS: { value: FirmId; label: string; description: string; tagline: string }[] = Object.values(FIRM_CONFIGS).map((c) => ({
+  value: c.firmId,
+  label: c.displayName,
+  description: c.tagline,
+  tagline: c.tagline,
+}))
 
 const TYPE_OPTIONS = [
   {
@@ -121,7 +122,7 @@ function RadioCard({
 
 export default function NewInterviewPage() {
   const router = useRouter()
-  const [firmStyle, setFirmStyle] = useState("mbb")
+  const [firmId, setFirmId] = useState<FirmId>("mckinsey")
   const [interviewType, setInterviewType] = useState("case")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -133,7 +134,7 @@ export default function NewInterviewPage() {
       const res = await fetch("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firmStyle, interviewType }),
+        body: JSON.stringify({ firmId, interviewType }),
       })
       if (!res.ok) throw new Error()
       const data = await res.json()
@@ -159,7 +160,20 @@ export default function NewInterviewPage() {
             <StaggerList className="space-y-2">
               {FIRM_OPTIONS.map((opt) => (
                 <StaggerItem key={opt.value}>
-                  <RadioCard selected={firmStyle === opt.value} onClick={() => setFirmStyle(opt.value)} label={opt.label} description={opt.description} />
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-ink-faint uppercase tracking-wide">{opt.label}</span>
+                  </div>
+                  <RadioCard
+                    selected={firmId === opt.value}
+                    onClick={() => setFirmId(opt.value)}
+                    label={opt.label}
+                    description={opt.description}
+                  />
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {opt.tagline.split(" · ").map((tag) => (
+                      <span key={tag} className="text-xs px-2 py-0.5 rounded bg-border-subtle text-ink-faint">{tag}</span>
+                    ))}
+                  </div>
                 </StaggerItem>
               ))}
             </StaggerList>

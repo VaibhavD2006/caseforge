@@ -5,6 +5,9 @@ import {
   getInterviewerSystemPrompt,
   streamInterviewerResponse,
 } from "@/lib/ai/interview"
+import { buildDirectorState, buildDirectorBlock } from "@/lib/ai/interview-director"
+import { FIRM_CONFIGS, type FirmId } from "@/config/firms/firm-styles"
+import { inngest } from "@/inngest/client"
 import type { Message } from "@/lib/ai/providers"
 
 export async function POST(req: Request) {
@@ -36,8 +39,31 @@ export async function POST(req: Request) {
     { role: "user" as const, content: userMessage },
   ]
 
-  const { firmStyle, interviewType } = data.session
-  const systemPrompt = await getInterviewerSystemPrompt(firmStyle, interviewType)
+  const { firmStyle, firmId, interviewType } = data.session
+  const systemPrompt = await getInterviewerSystemPrompt(firmId ?? firmStyle, interviewType)
+
+  const turnCount = data.session.turnCount ?? turns.length
+  const directorState = buildDirectorState(userMessage, turnCount, interviewType)
+  const firmConfig = FIRM_CONFIGS[firmId as FirmId]
+  if (!firmConfig) {
+    return NextResponse.json({ error: `Unknown firmId: ${firmId}` }, { status: 400 })
+  }
+  const directorBlock = buildDirectorBlock(directorState, firmConfig, interviewType)
+
+  // Fire-and-forget analytics event
+  inngest.send({
+    name: "interview/turn.completed",
+    data: {
+      sessionId,
+      userId: session.user.id,
+      turnIndex: turnCount,
+      stage: directorState.stage,
+      signal: directorState.signal,
+      messageLength: userMessage.length,
+      firmId: firmId ?? firmStyle,
+      interviewType,
+    },
+  }).catch(() => {/* non-critical */})
 
   // Stream response back to client
   const encoder = new TextEncoder()
@@ -45,7 +71,7 @@ export async function POST(req: Request) {
     async start(controller) {
       let fullResponse = ""
       try {
-        for await (const chunk of streamInterviewerResponse(systemPrompt, history)) {
+        for await (const chunk of streamInterviewerResponse(systemPrompt, history, directorBlock)) {
           fullResponse += chunk
           controller.enqueue(encoder.encode(chunk))
         }

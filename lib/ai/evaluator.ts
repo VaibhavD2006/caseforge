@@ -1,6 +1,6 @@
 import { jsonCompletion, chatCompletion, type Message } from "./providers"
 import { db } from "@/lib/db"
-import { promptTemplates } from "@/lib/db/schema"
+import { promptTemplates, weaknessTags } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import weaknessTaxonomy from "@/config/rubrics/weakness-taxonomy.json"
 import scoringDimensions from "@/config/rubrics/scoring-dimensions.json"
@@ -9,12 +9,16 @@ const ALLOWED_TAGS = new Set(weaknessTaxonomy.tags.map((t) => t.key))
 
 const DIMENSIONS = [
   "structure",
+  "framing",
   "hypothesis",
   "quantitative",
   "business_judgment",
+  "creativity",
   "synthesis",
+  "recommendation_quality",
   "communication",
   "confidence",
+  "presence",
 ] as const
 
 type Dimension = (typeof DIMENSIONS)[number]
@@ -43,21 +47,35 @@ export type ScorecardResult = {
   reliabilityFlag: boolean
   evaluatorModel: string
   evaluatorPromptVersion: string
+  recruiterSummary?: string
+}
+
+// Default weights for 11 dimensions (sums to 1.0)
+const DEFAULT_WEIGHTS: Record<Dimension, number> = {
+  structure: 0.16,
+  framing: 0.08,
+  hypothesis: 0.12,
+  quantitative: 0.14,
+  business_judgment: 0.16,
+  creativity: 0.06,
+  synthesis: 0.12,
+  recommendation_quality: 0.06,
+  communication: 0.06,
+  confidence: 0.03,
+  presence: 0.01,
 }
 
 function chunkTranscriptForDimension(turns: Turn[], dimension: Dimension): string {
-  // For communication and confidence, use all turns
-  if (dimension === "communication" || dimension === "confidence") {
-    return turns.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
+  if (dimension === "framing") {
+    const first = turns.slice(0, Math.min(4, Math.ceil(turns.length * 0.25)))
+    return first.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
   }
 
-  // For synthesis, focus on the last 1/3 of turns
-  if (dimension === "synthesis") {
-    const last = turns.slice(Math.floor(turns.length * 0.6))
-    return last.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
+  if (dimension === "hypothesis") {
+    const first = turns.slice(0, Math.ceil(turns.length * 0.4))
+    return first.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
   }
 
-  // For quantitative, find turns with numbers
   if (dimension === "quantitative") {
     const numericTurns = turns.filter((t) => /\d/.test(t.content))
     if (numericTurns.length > 0) {
@@ -65,13 +83,15 @@ function chunkTranscriptForDimension(turns: Turn[], dimension: Dimension): strin
     }
   }
 
-  // For hypothesis, focus on first half of turns
-  if (dimension === "hypothesis") {
-    const first = turns.slice(0, Math.ceil(turns.length * 0.6))
-    return first.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
+  if (dimension === "synthesis" || dimension === "recommendation_quality") {
+    const last = turns.slice(Math.floor(turns.length * 0.6))
+    return last.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
   }
 
-  // Default: all turns
+  if (dimension === "presence") {
+    return turns.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
+  }
+
   return turns.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
 }
 
@@ -88,9 +108,16 @@ async function getDimensionPrompt(dimension: Dimension): Promise<string> {
 
 function getDefaultDimensionPrompt(dimension: Dimension): string {
   const dim = scoringDimensions.dimensions[dimension]
+  if (!dim) {
+    return `Evaluate the candidate on the ${dimension.toUpperCase()} dimension.\n\n(Using default rubric)\n\nTranscript:\n{{TRANSCRIPT_CHUNKS}}\n\nReturn JSON: { "dimension": "${dimension}", "score": <1-10>, "rationale": "<2-3 sentences>", "evidenceSnippets": ["<exact quote>"], "tagKeys": [] }`
+  }
+
   return `Evaluate the candidate on the ${dimension.toUpperCase()} dimension.
 
 ${dim.description}
+
+Bands:
+${dim.bands.map((b) => `  ${b.range[0]}-${b.range[1]}: ${b.anchor}`).join("\n")}
 
 Transcript:
 {{TRANSCRIPT_CHUNKS}}
@@ -131,21 +158,20 @@ async function evaluateDimension(
   }
 }
 
-const WEIGHTS: Record<Dimension, number> = {
-  structure: 0.20,
-  hypothesis: 0.15,
-  quantitative: 0.15,
-  business_judgment: 0.20,
-  synthesis: 0.15,
-  communication: 0.10,
-  confidence: 0.05,
+// Extended weakness taxonomy for new dimensions
+const EXTENDED_TAGS: Record<string, { label: string; dimension: Dimension }> = {
+  framing_missing: { label: "Missing framing", dimension: "framing" },
+  framing_vague: { label: "Vague framing", dimension: "framing" },
+  creativity_absent: { label: "No creative insight", dimension: "creativity" },
+  recommendation_vague: { label: "Vague recommendation", dimension: "recommendation_quality" },
+  recommendation_no_action: { label: "No action plan", dimension: "recommendation_quality" },
 }
 
 export async function evaluateSession(
   turns: Turn[],
-  caseContext?: string
+  caseContext?: string,
+  firmId?: string
 ): Promise<ScorecardResult> {
-  // Run all 7 dimension evaluations sequentially (Ollama is local — parallel would saturate it)
   const results: DimensionResult[] = []
   for (const dim of DIMENSIONS) {
     const result = await evaluateDimension(dim, turns, caseContext)
@@ -153,8 +179,9 @@ export async function evaluateSession(
   }
 
   // Compute weighted overall score
+  const weights = DEFAULT_WEIGHTS
   const overallScore = results.reduce(
-    (sum, r) => sum + r.score * WEIGHTS[r.dimension],
+    (sum, r) => sum + r.score * weights[r.dimension],
     0
   )
 
@@ -169,7 +196,7 @@ export async function evaluateSession(
   // Collect all weakness/strength tags
   const allTagKeys = results.flatMap((r) => r.tagKeys)
   const weaknessTagKeys = [...new Set(allTagKeys)]
-  const strengthTagKeys: string[] = [] // populated from high-score dimensions
+  const strengthTagKeys: string[] = []
 
   // Derive top strengths and weaknesses from dimension results
   const sortedByScore = [...results].sort((a, b) => b.score - a.score)
@@ -194,12 +221,16 @@ export async function evaluateSession(
       const dim = r.dimension
       const actions: Record<Dimension, string> = {
         structure: "Practice building MECE frameworks before analyzing — write out your structure before speaking.",
+        framing: "Spend 60 seconds at the start restating the business objective and asking one clarifying question.",
         hypothesis: "Start every analysis with an explicit hypothesis. State what you think is true before looking at data.",
         quantitative: "Practice mental math daily. Always estimate before calculating.",
         business_judgment: "Ask yourself 'so what?' after every analysis point. What does this mean for the decision?",
+        creativity: "Before delivering your framework, ask: what's the most surprising thing that could be true here?",
         synthesis: "Lead with your recommendation, then support it. Never bury the conclusion.",
+        recommendation_quality: "Your recommendation should answer: What exactly, by when, and what's the one reason this could fail?",
         communication: "Signpost transitions between sections. Say 'First I'll cover X, then Y, then Z' before diving in.",
         confidence: "Acknowledge pushback briefly, then defend your position with evidence. Say 'I hear you, and here's why I still think...'",
+        presence: "Replace 'I think maybe...' with 'Based on X, I'd recommend...' — confidence lives in sentence structure.",
       }
       return actions[dim] ?? `Focus on improving ${dim.replace("_", " ")}.`
     })
@@ -218,19 +249,72 @@ export async function evaluateSession(
   }
 }
 
+export async function generateImprovementReport(
+  turns: Turn[],
+  scorecard: ScorecardResult,
+  caseContext?: string,
+  firmId?: string
+): Promise<string> {
+  const transcript = turns.map((t) => `[${t.role.toUpperCase()}]: ${t.content}`).join("\n\n")
+  const weakDims = Object.entries(scorecard.dimensionScores)
+    .filter(([, v]) => v.score <= 6)
+    .sort(([, a], [, b]) => a.score - b.score)
+    .map(([k, v]) => `${k.replace(/_/g, " ")} (${v.score}/10): ${v.rationale}`)
+  const strongDims = Object.entries(scorecard.dimensionScores)
+    .filter(([, v]) => v.score >= 7)
+    .sort(([, a], [, b]) => b.score - a.score)
+    .map(([k, v]) => `${k.replace(/_/g, " ")} (${v.score}/10)`)
+
+  const messages: Message[] = [
+    {
+      role: "user",
+      content: `You are a senior consulting coach writing a detailed post-interview improvement report for a candidate who just completed a practice case interview. Write a structured, honest, case-specific report they can study and act on.
+
+Overall score: ${scorecard.overallScore}/10
+Firm: ${firmId ?? "consulting"}
+Strong dimensions: ${strongDims.join(", ") || "none"}
+Weak dimensions:
+${weakDims.join("\n")}
+
+Case context:
+${caseContext ?? "General consulting case"}
+
+Full transcript:
+${transcript}
+
+Write the report in this exact structure (use markdown headers):
+
+## What You Did Well
+2-3 sentences referencing specific moments in the transcript where the candidate showed strength.
+
+## Critical Gaps
+For each dimension scoring 6 or below: one paragraph explaining exactly what went wrong in this specific case — not generic advice, but what the candidate actually did or failed to do in this session.
+
+## What a Strong Answer Looked Like
+A brief narrative (3-5 sentences) of what an ideal candidate would have done differently on this specific case — the structure they would have used, the analysis they would have prioritized, the recommendation they would have given.
+
+## Your 3-Step Practice Plan
+Three concrete, prioritized actions the candidate should take before their next interview. Be specific to what this session revealed.
+
+Keep the tone direct and coach-like. No fluff. Reference the actual case content.`,
+    },
+  ]
+
+  return chatCompletion(messages, { temperature: 0.4 })
+}
+
 export async function generateRecruiterSummary(
   turns: Turn[],
-  scorecard: ScorecardResult
+  scorecard: ScorecardResult,
+  firmId?: string
 ): Promise<string> {
   const transcript = turns.map((t) => `[${t.role}]: ${t.content}`).join("\n\n")
   const weakDims = Object.entries(scorecard.dimensionScores)
     .filter(([, v]) => v.score <= 6)
     .map(([k]) => k.replace("_", " "))
-    .join(", ")
   const strongDims = Object.entries(scorecard.dimensionScores)
     .filter(([, v]) => v.score >= 7)
     .map(([k]) => k.replace("_", " "))
-    .join(", ")
 
   const messages: Message[] = [
     {

@@ -9,7 +9,7 @@ import {
   caseLibrary,
 } from "@/lib/db/schema"
 import { eq, sql } from "drizzle-orm"
-import { evaluateSession, generateRecruiterSummary } from "@/lib/ai/evaluator"
+import { evaluateSession, generateRecruiterSummary, generateImprovementReport } from "@/lib/ai/evaluator"
 import { computeReadinessLevel, computeTier } from "@/lib/utils/readiness"
 import weaknessTaxonomy from "@/config/rubrics/weakness-taxonomy.json"
 
@@ -86,13 +86,16 @@ export const evaluateSessionFn = inngest.createFunction(
         .where(eq(interviewSessions.id, sessionId))
     })
 
-    // 4.5 Generate recruiter summary
-    await step.run("generate-recruiter-summary", async () => {
+    // 4.5 Generate recruiter summary + full improvement report (parallel)
+    await step.run("generate-recruiter-summary-and-report", async () => {
       const turns = transcript.turns as Array<{ role: string; content: string }>
-      const summary = await generateRecruiterSummary(turns, scorecardData)
+      const [summary, improvementReport] = await Promise.all([
+        generateRecruiterSummary(turns, scorecardData),
+        generateImprovementReport(turns, scorecardData, caseContext, session.firmId ?? session.firmStyle),
+      ])
       await db
         .update(scorecards)
-        .set({ recruiterSummary: summary })
+        .set({ recruiterSummary: summary, improvementReport })
         .where(eq(scorecards.sessionId, sessionId))
     })
 
