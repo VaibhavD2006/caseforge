@@ -23,6 +23,7 @@ export const users = pgTable("users", {
   email: text("email").unique(),
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
+  passwordHash: text("password_hash"),
 })
 
 export const accounts = pgTable(
@@ -143,12 +144,16 @@ export const promptTemplateTypeEnum = pgEnum("prompt_template_type", [
 
 export const dimensionEnum = pgEnum("dimension", [
   "structure",
+  "framing",
   "hypothesis",
   "quantitative",
   "business_judgment",
+  "creativity",
   "synthesis",
+  "recommendation_quality",
   "communication",
   "confidence",
+  "presence",
 ])
 
 export const goalTypeEnum = pgEnum("goal_type", [
@@ -250,6 +255,7 @@ export const interviewSessions = pgTable("interview_sessions", {
   templateId: uuid("template_id").references(() => interviewTemplates.id),
   caseId: uuid("case_id").references(() => caseLibrary.id),
   firmStyle: firmStyleEnum("firm_style").notNull(),
+  firmId: text("firm_id"),
   interviewType: interviewTypeEnum("interview_type").notNull(),
   status: sessionStatusEnum("status").notNull().default("in_progress"),
   startedAt: timestamp("started_at").notNull().defaultNow(),
@@ -289,6 +295,7 @@ export const scorecards = pgTable("scorecards", {
   reliabilityFlag: boolean("reliability_flag").default(false),
   nextActions: text("next_actions").array().default([]),
   recruiterSummary: text("recruiter_summary"),
+  improvementReport: text("improvement_report"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
@@ -346,6 +353,7 @@ export const progressSnapshots = pgTable("progress_snapshots", {
   persistentWeaknessTagKeys: text("persistent_weakness_tag_keys")
     .array()
     .default([]),
+  firmReadinessScores: jsonb("firm_readiness_scores").default({}),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
