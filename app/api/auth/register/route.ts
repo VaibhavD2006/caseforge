@@ -26,23 +26,23 @@ export async function POST(req: Request) {
     )
   }
 
+  // Store the hash on the token, not on the user. This prevents pre-hijacking:
+  // whoever owns the inbox and clicks the link gets their own hash activated.
+  const passwordHash = await hash(password, 12)
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000"
   const token = crypto.randomUUID()
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
   if (existing && !existing.emailVerified) {
-    // Unverified account — resend verification only, never overwrite the passwordHash.
-    // Overwriting would let an attacker set a new hash on a victim's unverified account;
-    // if the victim then clicks the new verification link they'd activate the attacker's password.
     await db.delete(verificationTokens).where(eq(verificationTokens.identifier, email))
-    await db.insert(verificationTokens).values({ identifier: email, token, expires })
+    await db.insert(verificationTokens).values({ identifier: email, token, expires, passwordHash })
     await sendVerificationEmail(email, token, baseUrl)
     return NextResponse.json({ ok: true })
   }
 
-  const passwordHash = await hash(password, 12)
-  await db.insert(users).values({ email, passwordHash, emailVerified: null })
-  await db.insert(verificationTokens).values({ identifier: email, token, expires })
+  // New user: create record without a passwordHash — verify-email will set it.
+  await db.insert(users).values({ email, emailVerified: null })
+  await db.insert(verificationTokens).values({ identifier: email, token, expires, passwordHash })
   await sendVerificationEmail(email, token, baseUrl)
 
   return NextResponse.json({ ok: true })

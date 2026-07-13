@@ -26,9 +26,11 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/sign-in?error=invalid-token", req.url))
   }
 
+  // Apply the passwordHash from this token — whoever owns the inbox and clicks
+  // the link gets their own hash activated, preventing account pre-hijacking.
   await db
     .update(users)
-    .set({ emailVerified: new Date() })
+    .set({ emailVerified: new Date(), passwordHash: record.passwordHash })
     .where(eq(users.email, record.identifier))
 
   await db

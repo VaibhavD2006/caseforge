@@ -62,6 +62,7 @@ export const verificationTokens = pgTable(
     identifier: text("identifier").notNull(),
     token: text("token").notNull(),
     expires: timestamp("expires", { mode: "date" }).notNull(),
+    passwordHash: text("password_hash"),
   },
   (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
 )
