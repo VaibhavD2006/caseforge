@@ -17,7 +17,7 @@ export default auth((req) => {
   })
 
   // Public routes — always allow
-  const publicRoutes = ["/", "/sign-in"]
+  const publicRoutes = ["/", "/sign-in", "/sign-up", "/verify-email", "/terms", "/privacy"]
   if (publicRoutes.includes(pathname)) {
     return response
   }
