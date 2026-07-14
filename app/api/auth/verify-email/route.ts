@@ -3,20 +3,27 @@ import { db } from "@/lib/db"
 import { users, verificationTokens } from "@/lib/db/schema"
 import { eq, and, gt } from "drizzle-orm"
 
+async function hashToken(token: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token))
+  return Buffer.from(buf).toString("hex")
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const token = searchParams.get("token")
+  const rawToken = searchParams.get("token")
 
-  if (!token) {
+  if (!rawToken) {
     return NextResponse.redirect(new URL("/sign-in?error=invalid-token", req.url))
   }
+
+  const tokenHash = await hashToken(rawToken)
 
   const [record] = await db
     .select()
     .from(verificationTokens)
     .where(
       and(
-        eq(verificationTokens.token, token),
+        eq(verificationTokens.token, tokenHash),
         gt(verificationTokens.expires, new Date())
       )
     )
@@ -35,7 +42,7 @@ export async function GET(req: Request) {
 
   await db
     .delete(verificationTokens)
-    .where(eq(verificationTokens.token, token))
+    .where(eq(verificationTokens.token, tokenHash))
 
   return NextResponse.redirect(new URL("/sign-in?verified=true", req.url))
 }
