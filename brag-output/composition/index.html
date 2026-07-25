@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CaseForge AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="assets/js/gsap.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#071A0A;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1280px;height:720px;overflow:hidden}
+.sc{position:absolute;inset:0;opacity:0;will-change:opacity}
+
+/* ── shared utilities ─────────────────────────────────── */
+.serif{font-family:'DM Serif Display',Georgia,serif}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.grid-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(74,222,128,.5) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(74,222,128,.5) 1px,transparent 1px);
+  background-size:40px 40px;
+  opacity:.032
+}
+
+/* ── Scene 1: Hook ───────────────────────────────────── */
+#s1{background:#071A0A}
+.s1-glow1{position:absolute;top:-8%;left:-8%;width:620px;height:620px;border-radius:50%;
+  background:radial-gradient(circle,rgba(74,222,128,.09),transparent 68%);pointer-events:none}
+.s1-glow2{position:absolute;bottom:5%;right:-6%;width:440px;height:440px;border-radius:50%;
+  background:radial-gradient(circle,rgba(34,211,238,.05),transparent 68%);pointer-events:none}
+#s1-content{position:relative;z-index:2;text-align:center}
+#s1-line1{font-size:84px;line-height:1.0;color:#FAFAF9;letter-spacing:-2.5px;margin-bottom:6px}
+#s1-line2{font-size:84px;line-height:1.0;color:#4ADE80;letter-spacing:-2.5px}
+#s1-badge{
+  display:inline-flex;align-items:center;gap:8px;margin-top:28px;
+  background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);
+  border-radius:100px;padding:7px 18px
+}
+.s1-dot{width:6px;height:6px;border-radius:50%;background:#4ADE80;flex-shrink:0}
+.s1-badge-text{color:#86EFAC;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+
+/* ── Scene 2: Interview Setup ────────────────────────── */
+#s2{background:#071A0A}
+#s2-card{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.18);border-radius:20px;
+  padding:30px 28px 26px;width:440px;position:relative;
+  box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 60px rgba(74,222,128,.06)
+}
+.s2-heading{color:#FAFAF9;font-size:19px;font-weight:700;margin-bottom:5px}
+.s2-sub{color:#7A9F7E;font-size:12.5px;margin-bottom:18px;line-height:1.55}
+.s2-section{color:#FAFAF9;font-size:11px;font-weight:700;margin-bottom:7px;
+  text-transform:uppercase;letter-spacing:.07em;opacity:.8}
+.radio-card{
+  border:1px solid rgba(74,222,128,.12);border-radius:12px;padding:11px 13px;
+  display:flex;align-items:flex-start;gap:10px;background:rgba(74,222,128,.03);margin-bottom:5px
+}
+.radio-card.sel{border-color:#4ADE80;background:rgba(74,222,128,.08)}
+.rdot{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(74,222,128,.3);
+  flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center}
+.radio-card.sel .rdot{border-color:#4ADE80}
+.rdot-inner{width:8px;height:8px;border-radius:50%;background:#4ADE80}
+.rc-title{color:#FAFAF9;font-size:13px;font-weight:600;margin-bottom:2px}
+.rc-desc{color:#7A9F7E;font-size:11px;line-height:1.5}
+.rc-badge{font-size:10px;padding:2px 8px;border-radius:20px;
+  background:rgba(245,158,11,.12);color:rgba(245,158,11,.85);font-weight:600;
+  margin-left:auto;flex-shrink:0;white-space:nowrap}
+#s2-cta{
+  width:100%;margin-top:15px;padding:12px;
+  background:#4ADE80;color:#071A0A;border:none;border-radius:12px;
+  font-family:'Inter',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;
+  transform-origin:center
+}
+#s2-cursor{position:absolute;top:0;left:0;z-index:10;pointer-events:none;opacity:0}
+
+/* ── Scene 3: Live AI Interview ──────────────────────── */
+#s3{background:#071A0A}
+#s3-win{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.16);border-radius:18px;
+  width:580px;overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,.5)
+}
+.s3-hdr{
+  background:rgba(74,222,128,.05);border-bottom:1px solid rgba(74,222,128,.1);
+  padding:11px 18px;display:flex;align-items:center;gap:8px
+}
+.s3-hdr-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80}
+.s3-hdr-label{color:#86EFAC;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.s3-msgs{padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-height:280px}
+.bubble{padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.65;max-width:82%}
+.bubble.ai{
+  background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.14);
+  color:#FAFAF9;align-self:flex-start;border-bottom-left-radius:4px
+}
+.bubble.usr{
+  background:rgba(74,222,128,.13);border:1px solid rgba(74,222,128,.2);
+  color:#FAFAF9;align-self:flex-end;border-bottom-right-radius:4px
+}
+.ai-label{color:#4ADE80;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:4px}
+.s3-cur{display:inline-block;width:2px;height:13px;background:#4ADE80;
+  margin-left:2px;vertical-align:text-bottom}
+
+/* ── Scene 4: Scorecard ──────────────────────────────── */
+#s4{background:#071A0A}
+#s4-card{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.18);border-radius:18px;
+  padding:22px 24px 20px;width:380px;
+  box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 60px rgba(74,222,128,.06)
+}
+.s4-chrome{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+.chrdot{width:9px;height:9px;border-radius:50%}
+.s4-chrome-label{color:#4ADE80;font-size:10px;margin-left:8px;opacity:.55;letter-spacing:.06em}
+.s4-title{color:#FAFAF9;font-size:12px;font-weight:600;margin-bottom:14px}
+.dim-row{margin-bottom:10px}
+.dim-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.dim-label{color:#A7C4AB;font-size:11px}
+.dim-score{color:#4ADE80;font-size:11px;font-weight:700}
+.bar-track{height:4px;background:rgba(74,222,128,.1);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:2px}
+#s4-feedback{
+  margin-top:14px;background:rgba(74,222,128,.06);border-radius:10px;
+  padding:10px 13px;border:1px solid rgba(74,222,128,.11)
+}
+.fb-label{color:#86EFAC;font-size:10px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:4px}
+.fb-text{color:#A7C4AB;font-size:11.5px;line-height:1.62}
+
+/* ── Scene 5: Dashboard ──────────────────────────────── */
+#s5{background:#071A0A}
+#s5-panel{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.14);border-radius:18px;
+  padding:24px 22px;width:440px;
+  box-shadow:0 24px 60px rgba(0,0,0,.45)
+}
+.s5-lbl{color:#86EFAC;font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:16px;opacity:.8}
+.s5-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.stat-tile{
+  background:rgba(74,222,128,.055);border:1px solid rgba(74,222,128,.08);
+  border-radius:10px;padding:12px 13px
+}
+.stat-key{color:#7A9F7E;font-size:10px;margin-bottom:4px}
+.stat-val{color:#FAFAF9;font-size:17px;font-weight:700}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:5px}
+.prog-label{color:#7A9F7E;font-size:11px}
+.prog-pct{color:#4ADE80;font-size:11px;font-weight:700}
+.prog-track{height:5px;background:rgba(74,222,128,.09);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;width:0%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:3px}
+.s5-caption{color:#7A9F7E;font-size:11px;margin-top:6px}
+
+/* ── Scene 6: Outro ──────────────────────────────────── */
+#s6{background:#071A0A}
+.s6-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,rgba(74,222,128,.07),transparent 58%)
+}
+#s6-logo{font-size:54px;color:#4ADE80;position:relative;z-index:2;margin-bottom:14px}
+#s6-tag{color:#A7C4AB;font-size:16px;position:relative;z-index:2;letter-spacing:-.2px}
+
+/* ── Play overlay ─────────────────────────────────────── */
+audio{display:none}
+#overlay{
+  position:fixed;inset:0;z-index:100;cursor:pointer;
+  background:rgba(7,26,10,.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px
+}
+.ov-btn{
+  width:64px;height:64px;border-radius:50%;background:#4ADE80;
+  display:flex;align-items:center;justify-content:center
+}
+.ov-label{color:#A7C4AB;font-size:14px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- Scene 1: Hook -->
+<div id="s1" class="sc center">
+  <div class="grid-bg"></div>
+  <div class="s1-glow1"></div>
+  <div class="s1-glow2"></div>
+  <div id="s1-content">
+    <div id="s1-line1" class="serif">Crack the case.</div>
+    <div id="s1-line2" class="serif">Every session.</div>
+    <div id="s1-badge">
+      <span class="s1-dot"></span>
+      <span class="s1-badge-text">AI-Powered Case Interview Prep</span>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 2: Interview Setup -->
+<div id="s2" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s2-card">
+    <div class="s2-heading">Start a mock interview</div>
+    <div class="s2-sub">The AI adapts its persona and rigor to your chosen firm.</div>
+
+    <div class="s2-section">Firm style</div>
+    <div class="radio-card sel">
+      <div class="rdot"><div class="rdot-inner"></div></div>
+      <div>
+        <div class="rc-title">McKinsey &amp; Company</div>
+        <div class="rc-desc">Hypothesis-led · Structured logic · Analytical rigor</div>
+      </div>
+    </div>
+
+    <div class="s2-section" style="margin-top:14px">Interview type</div>
+    <div class="radio-card sel">
+      <div class="rdot"><div class="rdot-inner"></div></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:7px">
+          <div class="rc-title">Full Case Interview</div>
+          <span class="rc-badge">Medium–Hard</span>
+        </div>
+        <div class="rc-desc">Structure, analysis, synthesis, recommendation</div>
+      </div>
+    </div>
+
+    <button id="s2-cta">
+      <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#071A0A" stroke-width="2"/><polygon points="10,8 17,12 10,16" fill="#071A0A"/></svg>
+      Begin interview
+    </button>
+
+    <!-- Cursor SVG -->
+    <svg id="s2-cursor" width="20" height="24" viewBox="0 0 20 24">
+      <path d="M2 2L2 19L6 14L9.5 21.5L12 20.5L8.5 13.5L15 13.5L2 2Z" fill="white" stroke="rgba(0,0,0,0.35)" stroke-width="0.8" stroke-linejoin="round"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Scene 3: Live AI Interview -->
+<div id="s3" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s3-win">
+    <div class="s3-hdr">
+      <div class="s3-hdr-dot"></div>
+      <span class="s3-hdr-label">AI Interviewer — McKinsey · Full Case</span>
+    </div>
+    <div class="s3-msgs">
+      <div class="bubble ai">
+        <div class="ai-label">AI Interviewer</div>
+        <span id="s3-typed"></span><span class="s3-cur" id="s3-cursor"></span>
+      </div>
+      <div class="bubble usr" id="s3-b2" style="opacity:0">
+        I'd break this into Revenue and Cost drivers. On the revenue side, I'd look at volume and pricing—
+      </div>
+      <div class="bubble ai" id="s3-b3" style="opacity:0">
+        <div class="ai-label">AI Interviewer</div>
+        Good. Prioritize one branch. Where's the pain?
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 4: Scorecard -->
+<div id="s4" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s4-card">
+    <div class="s4-chrome">
+      <span class="chrdot" style="background:#ef4444"></span>
+      <span class="chrdot" style="background:#f59e0b"></span>
+      <span class="chrdot" style="background:#22c55e"></span>
+      <span class="s4-chrome-label">Session Scorecard</span>
+    </div>
+    <div class="s4-title">Profitability Case — McKinsey style</div>
+    <div class="dim-row" id="r1"><div class="dim-hdr"><span class="dim-label">Structure</span><span class="dim-score">8.2 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b1"></div></div></div>
+    <div class="dim-row" id="r2"><div class="dim-hdr"><span class="dim-label">Hypothesis</span><span class="dim-score">7.5 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b2"></div></div></div>
+    <div class="dim-row" id="r3"><div class="dim-hdr"><span class="dim-label">Numerics</span><span class="dim-score">6.8 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b3"></div></div></div>
+    <div class="dim-row" id="r4"><div class="dim-hdr"><span class="dim-label">Synthesis</span><span class="dim-score">7.9 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b4"></div></div></div>
+    <div class="dim-row" id="r5"><div class="dim-hdr"><span class="dim-label">Communication</span><span class="dim-score">8.5 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b5"></div></div></div>
+    <div id="s4-feedback">
+      <div class="fb-label">AI Feedback</div>
+      <div class="fb-text">Strong structure. Quantify the revenue impact before pivoting to cost drivers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 5: Dashboard -->
+<div id="s5" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s5-panel">
+    <div class="s5-lbl">Readiness Dashboard</div>
+    <div class="s5-grid">
+      <div class="stat-tile" id="st1"><div class="stat-key">Avg Score</div><div class="stat-val">7.4 / 10</div></div>
+      <div class="stat-tile" id="st2"><div class="stat-key">Sessions</div><div class="stat-val">12</div></div>
+      <div class="stat-tile" id="st3"><div class="stat-key">Tier</div><div class="stat-val">Silver</div></div>
+      <div class="stat-tile" id="st4"><div class="stat-key">Status</div><div class="stat-val" style="color:#4ADE80">On Track</div></div>
+    </div>
+    <div class="prog-hdr">
+      <span class="prog-label">Readiness progress</span>
+      <span class="prog-pct">74%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="s5-bar"></div></div>
+    <div class="s5-caption">~4 more sessions to interview-ready</div>
+  </div>
+</div>
+
+<!-- Scene 6: Outro -->
+<div id="s6" class="sc center">
+  <div class="s6-glow"></div>
+  <div id="s6-logo" class="serif">CaseForge</div>
+  <div id="s6-tag">Start practicing free →</div>
+</div>
+
+</div><!-- #stage -->
+
+<audio id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" preload="auto"></audio>
+
+<div id="overlay">
+  <div class="ov-btn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="#071A0A"><polygon points="7,4 20,12 7,20"/></svg>
+  </div>
+  <span class="ov-label">Click to play</span>
+</div>
+
+<script>
+// ── Typing animation ──────────────────────────────────────────────────────
+const AI_Q = "Walk me through your structure for a profitability case.";
+let typingIv = null;
+
+function startTyping() {
+  const el = document.getElementById('s3-typed');
+  let i = 0;
+  typingIv = setInterval(() => {
+    el.textContent = AI_Q.slice(0, ++i);
+    if (i >= AI_Q.length) clearInterval(typingIv);
+  }, 1000 / 15); // 15 chars/sec → completes in ~3.6s, done well before 7.5s
+}
+
+// ── Cursor blink ──────────────────────────────────────────────────────────
+let blinkIv = null;
+function startBlink() {
+  const cur = document.getElementById('s3-cursor');
+  blinkIv = setInterval(() => {
+    cur.style.opacity = cur.style.opacity === '0' ? '1' : '0';
+  }, 500);
+}
+function stopBlink() {
+  clearInterval(blinkIv);
+  document.getElementById('s3-cursor').style.opacity = '0';
+}
+
+// ── Master timeline ───────────────────────────────────────────────────────
+function buildTimeline(music) {
+  // Set GSAP initial states for elements that need it
+  gsap.set(['#r1','#r2','#r3','#r4','#r5'], { opacity: 0, y: 5 });
+  gsap.set('#s4-feedback', { opacity: 0, y: 6 });
+  gsap.set(['#st1','#st2','#st3','#st4'], { opacity: 0, y: 7 });
+
+  const tl = gsap.timeline();
+
+  // ── S1: Hook (0–2.5s) ──────────────────────────────────────────────────
+  gsap.set('#s1', { opacity: 1 });
+
+  tl.from('#s1-line1', { opacity: 0, y: 26, duration: 0.38, ease: 'power3.out' }, 0.56)
+    .from('#s1-line2', { opacity: 0, y: 26, duration: 0.38, ease: 'power3.out' }, 1.09)
+    .from('#s1-badge', { opacity: 0, y: 12, duration: 0.3, ease: 'power2.out' }, 1.64)
+    // S1 → S2
+    .to('#s1', { opacity: 0, duration: 0.3, ease: 'power2.inOut' }, 2.25)
+    .fromTo('#s2', { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.inOut' }, 2.25)
+
+  // ── S2: Interview Setup (2.5–5.5s) ────────────────────────────────────
+    .from('#s2-card', { x: 56, opacity: 0, duration: 0.45, ease: 'power3.out' }, 2.6)
+    // Cursor drifts in from upper-right, moves to CTA button
+    // Button in card at approx (220, 285) relative to card top-left
+    .fromTo('#s2-cursor',
+      { opacity: 0, x: 340, y: 80 },
+      { opacity: 1, x: 190, y: 266, duration: 0.55, ease: 'power2.out' },
+      4.65)
+    // Click: button scale-down
+    .to('#s2-cta', { scale: 0.96, duration: 0.07, ease: 'none' }, 5.22)
+    .to('#s2-cta', { scale: 1, duration: 0.14, ease: 'back.out(2)' }, 5.29)
+    .to('#s2-cursor', { opacity: 0, duration: 0.12 }, 5.28)
+    // S2 → S3
+    .to('#s2', { opacity: 0, duration: 0.22 }, 5.4)
+    .fromTo('#s3', { opacity: 0 }, { opacity: 1, duration: 0.22 }, 5.4)
+
+  // ── S3: Live AI Interview (5.5–10.0s) ─────────────────────────────────
+  // typing starts at 5.7s via delayedCall below
+    // User bubble at 7.5s
+    .to('#s3-b2', { opacity: 1, duration: 0.28, ease: 'power2.out' }, 7.5)
+    // Stop blinking cursor at 8.6s
+    .call(stopBlink, [], 8.6)
+    // AI pushback at 8.74s (strong beat)
+    .to('#s3-b3', { opacity: 1, duration: 0.28, ease: 'power2.out' }, 8.74)
+    // S3 → S4
+    .to('#s3', { opacity: 0, duration: 0.35 }, 9.7)
+    .fromTo('#s4', { opacity: 0 }, { opacity: 1, duration: 0.35 }, 9.7)
+
+  // ── S4: Scorecard (10.0–15.0s) ────────────────────────────────────────
+  // beat-grid: 10.93, 11.46, 12.02, 12.55, 13.11
+  ;[
+    { row: '#r1', bar: '#b1', w: '82%', t: 10.93 },
+    { row: '#r2', bar: '#b2', w: '75%', t: 11.46 },
+    { row: '#r3', bar: '#b3', w: '68%', t: 12.02 },
+    { row: '#r4', bar: '#b4', w: '79%', t: 12.55 },
+    { row: '#r5', bar: '#b5', w: '85%', t: 13.11 },
+  ].forEach(({ row, bar, w, t }) => {
+    tl.to(row, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, t)
+      .to(bar, { width: w, duration: 0.48, ease: 'power2.out' }, t + 0.04);
+  });
+  // AI feedback at 13.64s (next beat)
+  tl.to('#s4-feedback', { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }, 13.64)
+    // S4 → S5
+    .to('#s4', { opacity: 0, duration: 0.38 }, 14.72)
+    .fromTo('#s5', { opacity: 0 }, { opacity: 1, duration: 0.38 }, 14.72)
+
+  // ── S5: Dashboard (15.0–18.0s) ────────────────────────────────────────
+  // beat-grid: 15.29, 15.84, 16.38, 16.93
+  ;[
+    { id: '#st1', t: 15.29 },
+    { id: '#st2', t: 15.84 },
+    { id: '#st3', t: 16.38 },
+    { id: '#st4', t: 16.93 },
+  ].forEach(({ id, t }) => {
+    tl.to(id, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, t);
+  });
+  // Readiness bar at 17.47s (strong beat)
+  tl.to('#s5-bar', { width: '74%', duration: 0.82, ease: 'power2.out' }, 17.47)
+    // S5 → S6
+    .to('#s5', { opacity: 0, duration: 0.38 }, 17.85)
+    .fromTo('#s6', { opacity: 0 }, { opacity: 1, duration: 0.38 }, 17.85)
+
+  // ── S6: Outro (18.0–20.0s) ────────────────────────────────────────────
+  // logo at 18.02s (beat), tagline at 18.56s (strong beat)
+    .from('#s6-logo', { opacity: 0, scale: 0.9, duration: 0.38, ease: 'back.out(1.6)' }, 18.02)
+    .from('#s6-tag', { opacity: 0, y: 10, duration: 0.32, ease: 'power2.out' }, 18.56)
+    // Fade to black at 19.6s
+    .to('#s6', { opacity: 0, duration: 0.5 }, 19.6);
+
+  // Music volume fade (18.5→20s)
+  const vol = { v: 0.35 };
+  gsap.to(vol, {
+    v: 0, delay: 18.5, duration: 1.5,
+    onUpdate() { music.volume = Math.max(0, vol.v); }
+  });
+
+  return tl;
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────────────
+document.getElementById('overlay').addEventListener('click', () => {
+  document.getElementById('overlay').style.display = 'none';
+  const music = document.getElementById('music');
+  music.volume = 0.35;
+  music.play().catch(() => {});
+
+  document.fonts.ready.then(() => {
+    buildTimeline(music);
+
+    // Start typing + blink at 5.7s
+    gsap.delayedCall(5.7, () => {
+      startTyping();
+      startBlink();
+    });
+  });
+});
+</script>
+</body>
+</html>
