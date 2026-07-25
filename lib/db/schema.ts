@@ -405,6 +405,50 @@ export const drillAttempts = pgTable("drill_attempts", {
   completedAt: timestamp("completed_at").notNull().defaultNow(),
 })
 
+// ─── Leaderboard ─────────────────────────────────────────────────────────────
+
+export const leaderboardProfiles = pgTable("leaderboard_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  displayName: text("display_name"),
+  schoolName: text("school_name"),
+  graduationYear: integer("graduation_year"),
+  isOptedIn: boolean("is_opted_in").notNull().default(false),
+  showSchool: boolean("show_school").notNull().default(true),
+  showExactScore: boolean("show_exact_score").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const leaderboardScoreCache = pgTable("leaderboard_score_cache", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  segment: text("segment").notNull().default("overall"),
+  leaderboardScore: decimal("leaderboard_score", { precision: 6, scale: 3 }).notNull(),
+  qualityScore: decimal("quality_score", { precision: 6, scale: 3 }),
+  improvementScore: decimal("improvement_score", { precision: 6, scale: 3 }),
+  consistencyScore: decimal("consistency_score", { precision: 6, scale: 3 }),
+  eligibleSessionCount: integer("eligible_session_count").notNull().default(0),
+  computedAt: timestamp("computed_at").notNull().defaultNow(),
+})
+
+export const leaderboardRankHistory = pgTable("leaderboard_rank_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  segment: text("segment").notNull().default("overall"),
+  rank: integer("rank").notNull(),
+  leaderboardScore: decimal("leaderboard_score", { precision: 6, scale: 3 }).notNull(),
+  snapshotDate: date("snapshot_date").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect
@@ -423,3 +467,6 @@ export type RubricConfig = typeof rubricConfigs.$inferSelect
 export type Goal = typeof goals.$inferSelect
 export type Drill = typeof drills.$inferSelect
 export type DrillAttempt = typeof drillAttempts.$inferSelect
+export type LeaderboardProfile = typeof leaderboardProfiles.$inferSelect
+export type LeaderboardScoreCache = typeof leaderboardScoreCache.$inferSelect
+export type LeaderboardRankHistory = typeof leaderboardRankHistory.$inferSelect

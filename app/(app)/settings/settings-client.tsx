@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Settings, Check } from "lucide-react"
+import { Settings, Check, Trophy } from "lucide-react"
 
 const FIRM_OPTIONS = [
   { value: "mbb", label: "MBB (McKinsey, BCG, Bain)" },
@@ -30,14 +30,51 @@ type Props = {
     email: string
     image: string | null
   }
+  leaderboard: {
+    isOptedIn: boolean
+    displayName: string
+    schoolName: string
+    showSchool: boolean
+    showExactScore: boolean
+  }
 }
 
-export default function SettingsClient({ profile, user }: Props) {
+export default function SettingsClient({ profile, user, leaderboard }: Props) {
   const [targetFirms, setTargetFirms] = useState<string[]>(profile.targetFirms)
   const [experienceLevel, setExperienceLevel] = useState(profile.experienceLevel)
   const [interviewDate, setInterviewDate] = useState(profile.interviewDate)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  const [lbOptedIn, setLbOptedIn] = useState(leaderboard.isOptedIn)
+  const [lbDisplayName, setLbDisplayName] = useState(leaderboard.displayName)
+  const [lbSchoolName, setLbSchoolName] = useState(leaderboard.schoolName)
+  const [lbShowSchool, setLbShowSchool] = useState(leaderboard.showSchool)
+  const [lbShowExactScore, setLbShowExactScore] = useState(leaderboard.showExactScore)
+  const [lbSaving, setLbSaving] = useState(false)
+  const [lbSaved, setLbSaved] = useState(false)
+
+  async function handleLbSave() {
+    setLbSaving(true)
+    setLbSaved(false)
+    try {
+      await fetch("/api/leaderboard/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isOptedIn: lbOptedIn,
+          displayName: lbDisplayName || null,
+          schoolName: lbSchoolName || null,
+          showSchool: lbShowSchool,
+          showExactScore: lbShowExactScore,
+        }),
+      })
+      setLbSaved(true)
+      setTimeout(() => setLbSaved(false), 3000)
+    } finally {
+      setLbSaving(false)
+    }
+  }
 
   function toggleFirm(value: string) {
     setTargetFirms((prev) =>
@@ -196,6 +233,85 @@ export default function SettingsClient({ profile, user }: Props) {
         >
           {saving ? "Saving…" : saved ? "✓ Saved" : "Save changes"}
         </button>
+
+        {/* Leaderboard */}
+        <div className="bg-surface border border-border-subtle rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Trophy className="w-4 h-4 text-brand" />
+            <p className="text-ink text-sm font-semibold">Leaderboard</p>
+          </div>
+          <p className="text-ink-muted text-xs mb-4">
+            Opt in to appear on the campus leaderboard. Your rank is based on skill quality and improvement — not session count.
+          </p>
+
+          {/* Opt-in toggle */}
+          <div className="flex items-center justify-between mb-4 p-3 rounded-lg border border-border-subtle">
+            <span className="text-ink-muted text-sm">Appear on leaderboard</span>
+            <button
+              type="button"
+              onClick={() => setLbOptedIn((v) => !v)}
+              className={`relative w-10 h-5 rounded-full transition-colors ${lbOptedIn ? "bg-brand" : "bg-border-strong"}`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${lbOptedIn ? "translate-x-5" : "translate-x-0"}`}
+              />
+            </button>
+          </div>
+
+          {lbOptedIn && (
+            <div className="space-y-3">
+              <div>
+                <label className="text-ink-muted text-xs mb-1 block">Display name (alias)</label>
+                <input
+                  type="text"
+                  value={lbDisplayName}
+                  onChange={(e) => setLbDisplayName(e.target.value)}
+                  placeholder="e.g. A. Chen or leave blank for anonymous"
+                  className="w-full px-3 py-2 rounded-lg border border-border-strong bg-surface-raised text-ink text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-ink-muted text-xs mb-1 block">School / University</label>
+                <input
+                  type="text"
+                  value={lbSchoolName}
+                  onChange={(e) => setLbSchoolName(e.target.value)}
+                  placeholder="e.g. Harvard Business School"
+                  className="w-full px-3 py-2 rounded-lg border border-border-strong bg-surface-raised text-ink text-sm focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors"
+                />
+              </div>
+
+              <div className="space-y-2 pt-1">
+                {[
+                  { label: "Show school name publicly", value: lbShowSchool, set: setLbShowSchool },
+                  { label: "Show exact score (vs. tier only)", value: lbShowExactScore, set: setLbShowExactScore },
+                ].map(({ label, value, set }) => (
+                  <div key={label} className="flex items-center justify-between p-3 rounded-lg border border-border-subtle">
+                    <span className="text-ink-muted text-sm">{label}</span>
+                    <button
+                      type="button"
+                      onClick={() => set((v) => !v)}
+                      className={`relative w-10 h-5 rounded-full transition-colors ${value ? "bg-brand" : "bg-border-strong"}`}
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${value ? "translate-x-5" : "translate-x-0"}`}
+                      />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => void handleLbSave()}
+            disabled={lbSaving}
+            className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-surface border border-border-strong hover:border-brand text-ink text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {lbSaving ? "Saving…" : lbSaved ? "✓ Saved" : "Save leaderboard settings"}
+          </button>
+        </div>
       </main>
     </div>
   )

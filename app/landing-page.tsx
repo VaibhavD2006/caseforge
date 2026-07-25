@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { DM_Serif_Display } from "next/font/google"
 import { FaqAccordion } from "./faq-accordion"
 import { LandingNav } from "./landing-nav"
+import { LeaderboardPreviewSection } from "@/components/leaderboard/LeaderboardPreviewSection"
 
 const serif = DM_Serif_Display({ subsets: ["latin"], weight: "400" })
 
@@ -146,6 +147,7 @@ export function LandingPage() {
       <SolutionSection />
       <CapabilitiesSection />
       <HowItWorksSection />
+      <LeaderboardPreviewSection />
       <CTASection />
       <FAQSection />
       <SiteFooter />

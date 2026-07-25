@@ -13,10 +13,11 @@ import { eq, desc } from "drizzle-orm"
 import { computeReadinessLevel, computeTier } from "@/lib/utils/readiness"
 import { getRecommendedDrills } from "@/lib/db/queries/drills"
 import { getProfileByUserId } from "@/lib/db/queries/profile"
+import { getUserRankContext } from "@/lib/db/queries/leaderboard"
 import DashboardClient from "./dashboard-client"
 
 async function getDashboardData(userId: string) {
-  const [sessions, userScorecards, userWeaknesses, snapshots, userGoals, userData] =
+  const [sessions, userScorecards, userWeaknesses, snapshots, userGoals, userData, leaderboardContext] =
     await Promise.all([
       db
         .select()
@@ -43,6 +44,7 @@ async function getDashboardData(userId: string) {
         .limit(10),
       db.select().from(goals).where(eq(goals.userId, userId)),
       db.select({ name: users.name }).from(users).where(eq(users.id, userId)).limit(1),
+      getUserRankContext(userId),
     ])
 
   const evaluatedSessions = userScorecards.length
@@ -102,6 +104,7 @@ async function getDashboardData(userId: string) {
     recommendedDrills,
     userName: userData[0]?.name ?? null,
     targetFirms,
+    leaderboardContext,
   }
 }
 
@@ -154,6 +157,7 @@ export default async function DashboardPage() {
         estimatedMinutes: d.estimatedMinutes,
       }))}
       targetFirms={data.targetFirms}
+      leaderboardContext={data.leaderboardContext}
     />
   )
 }

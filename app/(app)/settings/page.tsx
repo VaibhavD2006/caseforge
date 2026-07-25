@@ -1,11 +1,15 @@
 import { requireAuth } from "@/lib/auth/session"
 import { getProfileByUserId } from "@/lib/db/queries/profile"
+import { getLeaderboardProfile } from "@/lib/db/queries/leaderboard"
 import SettingsClient from "./settings-client"
 
 export default async function SettingsPage() {
   const session = await requireAuth()
   const userId = session.user.id!
-  const profile = await getProfileByUserId(userId)
+  const [profile, lbProfile] = await Promise.all([
+    getProfileByUserId(userId),
+    getLeaderboardProfile(userId),
+  ])
 
   return (
     <SettingsClient
@@ -19,6 +23,13 @@ export default async function SettingsPage() {
         name: session.user.name ?? "",
         email: session.user.email ?? "",
         image: session.user.image ?? null,
+      }}
+      leaderboard={{
+        isOptedIn: lbProfile?.isOptedIn ?? false,
+        displayName: lbProfile?.displayName ?? "",
+        schoolName: lbProfile?.schoolName ?? "",
+        showSchool: lbProfile?.showSchool ?? true,
+        showExactScore: lbProfile?.showExactScore ?? false,
       }}
     />
   )

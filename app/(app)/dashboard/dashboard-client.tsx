@@ -13,6 +13,7 @@ import { DrillsWidget } from "@/components/dashboard/DrillsWidget"
 import { GoalsWidget } from "@/components/dashboard/GoalsWidget"
 import { RecruiterSummaryCard } from "@/components/dashboard/RecruiterSummaryCard"
 import { FirmReadinessWidget } from "@/components/dashboard/FirmReadinessWidget"
+import { LeaderboardDashboardWidget } from "@/components/leaderboard/LeaderboardDashboardWidget"
 
 type Session = {
   id: string
@@ -49,6 +50,14 @@ type Drill = {
   estimatedMinutes: number
 }
 
+type LeaderboardContext = {
+  rank: number | null
+  percentile: number | null
+  movement: { delta: number; direction: "up" | "down" | "same" | "new" }
+  isEligible: boolean
+  eligibleSessionCount: number
+}
+
 type Props = {
   userName: string | null
   sessions: Session[]
@@ -63,6 +72,7 @@ type Props = {
   goals: Goal[]
   recommendedDrills: Drill[]
   targetFirms: string[]
+  leaderboardContext: LeaderboardContext
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -88,6 +98,7 @@ export default function DashboardClient({
   goals,
   recommendedDrills,
   targetFirms,
+  leaderboardContext,
 }: Props) {
   const firstName = userName?.split(" ")[0] ?? "there"
 
@@ -120,6 +131,7 @@ export default function DashboardClient({
                 { href: "/goals", label: "Goals" },
                 { href: "/analytics", label: "Analytics" },
                 { href: "/history", label: "History" },
+                { href: "/leaderboard", label: "Leaderboard" },
                 { href: "/settings", label: "Settings" },
               ].map((item) => (
                 <Link key={item.href} href={item.href} className="text-ink-muted text-sm hover:text-ink transition-colors">
@@ -150,7 +162,7 @@ export default function DashboardClient({
         </FadeUp>
 
         {/* Row 1: Hero metrics */}
-        <StaggerList className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+        <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <StaggerItem>
             <ReadinessCard avgScore={avgScore} evaluatedSessions={evaluatedSessions} readinessLevel={readinessLevel} tier={tier} />
           </StaggerItem>
@@ -183,6 +195,16 @@ export default function DashboardClient({
                 <p className="text-ink-faint text-sm mt-2">No data yet.</p>
               )}
             </motion.div>
+          </StaggerItem>
+
+          <StaggerItem>
+            <LeaderboardDashboardWidget
+              rank={leaderboardContext.rank}
+              percentile={leaderboardContext.percentile}
+              movement={leaderboardContext.movement}
+              isEligible={leaderboardContext.isEligible}
+              eligibleSessionCount={leaderboardContext.eligibleSessionCount}
+            />
           </StaggerItem>
         </StaggerList>
 
