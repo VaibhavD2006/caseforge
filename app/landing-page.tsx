@@ -135,8 +135,30 @@ export function LandingPage() {
           .cap-wide { grid-column:span 2 }
         }
 
+        @keyframes lp-badge-shimmer {
+          0%,100% { background-position:0% 50% }
+          50%      { background-position:100% 50% }
+        }
+        @keyframes lp-dot-live {
+          0%,100% { opacity:1; transform:scale(1) }
+          50%      { opacity:.45; transform:scale(1.6) }
+        }
+        .lp-badge {
+          background: linear-gradient(
+            120deg,
+            rgba(74,222,128,.05) 0%,
+            rgba(74,222,128,.18) 30%,
+            rgba(52,211,153,.26) 55%,
+            rgba(74,222,128,.05) 100%
+          );
+          background-size:280% 280%;
+          animation:lp-badge-shimmer 5s ease infinite;
+        }
+        .lp-dot-live { animation:lp-dot-live 2s ease-in-out infinite }
+
         @media (prefers-reduced-motion:reduce) {
-          .lp-float,.lp-pulse { animation:none }
+          .lp-float,.lp-pulse,.lp-badge,.lp-dot-live { animation:none }
+          .lp-badge { background:rgba(74,222,128,.10) }
         }
       `}</style>
 
@@ -215,24 +237,25 @@ function HeroSection() {
         {/* Copy */}
         <div>
           <motion.div
+            className="lp-badge"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: E, delay: 0.05 }}
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 7,
-              background: "rgba(74,222,128,.09)",
-              border: "1px solid rgba(74,222,128,.2)",
+              gap: 8,
+              border: "1px solid rgba(74,222,128,.28)",
               borderRadius: 100,
-              padding: "5px 13px",
+              padding: "6px 14px",
               marginBottom: 28,
             }}
           >
             <span
+              className="lp-dot-live"
               style={{
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 borderRadius: "50%",
                 background: "#4ADE80",
                 display: "inline-block",
@@ -242,13 +265,12 @@ function HeroSection() {
             <span
               style={{
                 color: "#86EFAC",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 600,
-                letterSpacing: ".1em",
-                textTransform: "uppercase",
+                letterSpacing: ".01em",
               }}
             >
-              AI-powered case interview prep
+              250+ students practicing right now
             </span>
           </motion.div>
 
