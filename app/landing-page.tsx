@@ -273,17 +273,32 @@ function HeroSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, ease: E, delay: 0.3 }}
+            transition={{ duration: 0.65, ease: E, delay: 0.28 }}
             style={{
-              fontSize: "clamp(15px,1.7vw,17px)",
+              fontSize: "clamp(16px,1.8vw,19px)",
+              color: "#FAFAF9",
+              fontWeight: 500,
+              lineHeight: 1.4,
+              marginBottom: 14,
+              letterSpacing: "-0.3px",
+            }}
+          >
+            See where you rank on campus.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, ease: E, delay: 0.38 }}
+            style={{
+              fontSize: "clamp(14px,1.5vw,16px)",
               color: "#A7C4AB",
               lineHeight: 1.78,
               marginBottom: 36,
-              maxWidth: "46ch",
+              maxWidth: "44ch",
             }}
           >
-            Live mock interviews, instant 7-dimension scoring, and a readiness dashboard that tracks your progress until you
-            hit interview-ready. Built for MBB and T2 strategy candidates.
+            Live mock interviews, instant 7-dimension scoring, and a campus leaderboard that shows exactly where you stand before recruiting season.
           </motion.p>
 
           <motion.div
@@ -336,15 +351,15 @@ function HeroSection() {
           </motion.div>
         </div>
 
-        {/* Animated mock card */}
+        {/* Hero leaderboard card */}
         <motion.div
           initial={{ opacity: 0, x: 30, y: 8 }}
           animate={{ opacity: 1, x: 0, y: 0 }}
           transition={{ duration: 0.75, ease: E, delay: 0.25 }}
           className="flex justify-center lg:justify-end"
         >
-          <div className="lp-float w-full max-w-[400px]">
-            <HeroCard />
+          <div className="lp-float w-full max-w-[420px]">
+            <HeroLeaderboardCard />
           </div>
         </motion.div>
       </div>
@@ -352,79 +367,155 @@ function HeroSection() {
   )
 }
 
-function HeroCard() {
+const HERO_BOARD = [
+  { rank: 1, name: "A. Chen",     school: "Harvard Business", score: "9.4", up: true,  delta: 2, tier: "Emerald", tierColor: "#4ade80" },
+  { rank: 2, name: "M. Patel",    school: "Wharton",          score: "9.1", up: false, delta: 0, tier: "Emerald", tierColor: "#4ade80" },
+  { rank: 3, name: "J. Williams", school: "Booth",            score: "8.7", up: true,  delta: 5, tier: "Gold",    tierColor: "#eab308" },
+  { rank: 4, name: "S. Kim",      school: "Kellogg",          score: "8.4", up: false, delta: 1, tier: "Gold",    tierColor: "#eab308" },
+  { rank: 5, name: "R. Torres",   school: "Tuck",             score: "8.2", up: true,  delta: 3, tier: "Gold",    tierColor: "#eab308" },
+  { rank: 6, name: "You?",        school: "Sign up to rank",  score: "—",   up: false, delta: 0, tier: "",        tierColor: "" },
+]
+
+const RANK_GOLD: Record<number, string> = { 1: "#eab308", 2: "#94a3b8", 3: "#cd7f32" }
+
+function HeroLeaderboardCard() {
   return (
     <div
       style={{
-        background: "#0B1F0E",
-        border: "1px solid rgba(74,222,128,.16)",
+        background: "#0A1A0C",
+        border: "1px solid rgba(74,222,128,.18)",
         borderRadius: 18,
-        padding: "22px 22px 18px",
-        boxShadow: "0 40px 80px rgba(0,0,0,.55), 0 0 60px rgba(74,222,128,.06)",
+        overflow: "hidden",
+        boxShadow: "0 40px 80px rgba(0,0,0,.55), 0 0 60px rgba(74,222,128,.07)",
       }}
     >
-      {/* Window chrome */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 18 }}>
-        {(["#ef4444", "#f59e0b", "#22c55e"] as const).map((c) => (
-          <span
-            key={c}
-            style={{ width: 9, height: 9, borderRadius: "50%", background: c, display: "inline-block" }}
-          />
-        ))}
-        <span style={{ color: "#4ADE80", fontSize: 10, marginLeft: 8, opacity: 0.6, letterSpacing: ".06em" }}>
-          Session Scorecard
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 18px",
+          borderBottom: "1px solid rgba(74,222,128,.10)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ fontSize: 13 }}>🏆</span>
+          <span style={{ color: "#FAFAF9", fontSize: 13, fontWeight: 600 }}>Campus Leaderboard</span>
+        </div>
+        <span
+          style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: ".08em",
+            textTransform: "uppercase",
+            color: "#4ADE80",
+            background: "rgba(74,222,128,.09)",
+            border: "1px solid rgba(74,222,128,.2)",
+            borderRadius: 100,
+            padding: "3px 9px",
+          }}
+        >
+          Live
         </span>
       </div>
 
-      <div style={{ color: "#FAFAF9", fontSize: 12, fontWeight: 600, marginBottom: 14 }}>
-        Profitability Case — McKinsey style
-      </div>
-
-      {SCORES.map(([dim, score], i) => (
-        <div key={dim} style={{ marginBottom: 9 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ color: "#A7C4AB", fontSize: 11 }}>{dim}</span>
-            <span style={{ color: "#4ADE80", fontSize: 11, fontWeight: 700 }}>{score}/10</span>
-          </div>
-          <div style={{ height: 4, background: "rgba(74,222,128,.1)", borderRadius: 2, overflow: "hidden" }}>
-            <motion.div
-              initial={{ width: "0%" }}
-              animate={{ width: `${score * 10}%` }}
-              transition={{ duration: 0.9, ease: E, delay: 0.75 + i * 0.08 }}
-              style={{ height: "100%", background: "linear-gradient(90deg,#16A34A,#4ADE80)", borderRadius: 2 }}
-            />
-          </div>
-        </div>
-      ))}
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.45, delay: 1.5 }}
+      {/* Column headers */}
+      <div
         style={{
-          marginTop: 14,
-          background: "rgba(74,222,128,.06)",
-          borderRadius: 10,
-          padding: "10px 13px",
-          border: "1px solid rgba(74,222,128,.11)",
+          display: "grid",
+          gridTemplateColumns: "28px 1fr 52px 36px",
+          gap: 6,
+          padding: "8px 18px",
+          borderBottom: "1px solid rgba(255,255,255,.04)",
         }}
       >
-        <div
-          style={{
-            color: "#86EFAC",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: ".08em",
-            textTransform: "uppercase",
-            marginBottom: 4,
-          }}
+        {["#", "Candidate", "Score", ""].map((h) => (
+          <span key={h} style={{ fontSize: 9, color: "rgba(255,255,255,.28)", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".08em" }}>
+            {h}
+          </span>
+        ))}
+      </div>
+
+      {/* Rows */}
+      {HERO_BOARD.map((entry, i) => {
+        const isYou = entry.rank === 6
+        const rankColor = RANK_GOLD[entry.rank] ?? "rgba(255,255,255,.35)"
+        return (
+          <motion.div
+            key={entry.rank}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.5 + i * 0.07, ease: E }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "28px 1fr 52px 36px",
+              gap: 6,
+              padding: "10px 18px",
+              borderBottom: "1px solid rgba(255,255,255,.04)",
+              background: isYou ? "rgba(74,222,128,.05)" : undefined,
+            }}
+          >
+            {/* Rank */}
+            <span style={{ fontSize: 12, fontWeight: 700, color: rankColor, fontVariantNumeric: "tabular-nums" }}>
+              {entry.rank}
+            </span>
+
+            {/* Name + school */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ color: isYou ? "#4ADE80" : "#FAFAF9", fontSize: 12, fontWeight: isYou ? 700 : 600 }}>
+                  {entry.name}
+                </span>
+                {entry.tier && (
+                  <span style={{ fontSize: 9, fontWeight: 700, color: entry.tierColor, background: `${entry.tierColor}1a`, border: `1px solid ${entry.tierColor}44`, borderRadius: 100, padding: "1px 6px" }}>
+                    {entry.tier}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 10, color: isYou ? "rgba(74,222,128,.6)" : "rgba(255,255,255,.3)" }}>
+                {entry.school}
+              </span>
+            </div>
+
+            {/* Score */}
+            <span style={{ fontSize: 13, fontWeight: 700, color: isYou ? "rgba(255,255,255,.3)" : "#4ADE80", fontVariantNumeric: "tabular-nums", textAlign: "right" }}>
+              {entry.score}
+            </span>
+
+            {/* Movement */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+              {entry.delta > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 600, color: entry.up ? "#4ade80" : "#f97316" }}>
+                  {entry.up ? "↑" : "↓"}{entry.delta}
+                </span>
+              )}
+              {entry.delta === 0 && entry.tier && (
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,.25)" }}>—</span>
+              )}
+            </div>
+          </motion.div>
+        )
+      })}
+
+      {/* Footer CTA */}
+      <div
+        style={{
+          padding: "12px 18px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderTop: "1px solid rgba(74,222,128,.10)",
+        }}
+      >
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,.3)" }}>Where do you land?</span>
+        <Link
+          href="/sign-in"
+          style={{ fontSize: 11, fontWeight: 700, color: "#4ADE80", textDecoration: "none" }}
         >
-          AI Feedback
-        </div>
-        <div style={{ color: "#A7C4AB", fontSize: 11.5, lineHeight: 1.62 }}>
-          Strong structure. Quantify the revenue impact before pivoting to cost drivers.
-        </div>
-      </motion.div>
+          Claim your rank →
+        </Link>
+      </div>
     </div>
   )
 }
