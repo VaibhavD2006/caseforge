@@ -1,24 +1,28 @@
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
-import { createSession, createTranscript } from "@/lib/db/queries/sessions"
+import { auth } from '@/auth'
+import { NextResponse } from 'next/server'
+import { createSession, createTranscript } from '@/lib/db/queries/sessions'
 import {
   getInterviewerSystemPrompt,
   selectCase,
   streamInterviewerOpening,
-} from "@/lib/ai/interview"
-import { firmStyleEnum, interviewTypeEnum } from "@/lib/db/schema"
-import { FIRM_CONFIGS, type FirmId, normalizeFirmId } from "@/config/firms/firm-styles"
+} from '@/lib/ai/interview'
+import { firmStyleEnum, interviewTypeEnum } from '@/lib/db/schema'
+import {
+  FIRM_CONFIGS,
+  type FirmId,
+  normalizeFirmId,
+} from '@/config/firms/firm-styles'
 
 export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const body = await req.json()
   const {
-    firmId = "mckinsey",
-    interviewType = "case",
+    firmId = 'mckinsey',
+    interviewType = 'case',
     templateId,
   } = body as {
     firmId?: FirmId
@@ -28,7 +32,10 @@ export async function POST(req: Request) {
 
   const normalizedFirmId = normalizeFirmId(firmId)
   if (!normalizedFirmId) {
-    return NextResponse.json({ error: `Invalid firmId: ${firmId}` }, { status: 400 })
+    return NextResponse.json(
+      { error: `Invalid firmId: ${firmId}` },
+      { status: 400 }
+    )
   }
 
   const firmConfig = FIRM_CONFIGS[normalizedFirmId]
@@ -39,19 +46,30 @@ export async function POST(req: Request) {
 
   // Build system prompt with firm-specific modifier
   const caseContext = selectedCase?.contextText
-  const systemPrompt = await getInterviewerSystemPrompt(normalizedFirmId, interviewType, caseContext)
+  const systemPrompt = await getInterviewerSystemPrompt(
+    normalizedFirmId,
+    interviewType,
+    caseContext
+  )
 
   // Stream Gemini BEFORE writing to DB so a quota failure never leaves an orphaned session
-  let openingMessage = ""
+  let openingMessage = ''
   try {
     for await (const chunk of streamInterviewerOpening(systemPrompt)) {
       openingMessage += chunk
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
-    if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many Requests")) {
+    if (
+      msg.includes('429') ||
+      msg.includes('quota') ||
+      msg.includes('Too Many Requests')
+    ) {
       return NextResponse.json(
-        { error: "AI service is temporarily unavailable. Please try again in a moment." },
+        {
+          error:
+            'AI service is temporarily unavailable. Please try again in a moment.',
+        },
         { status: 503 }
       )
     }
@@ -69,7 +87,7 @@ export async function POST(req: Request) {
   })
 
   await createTranscript(interviewSession.id, {
-    role: "interviewer",
+    role: 'interviewer',
     content: openingMessage,
   })
 

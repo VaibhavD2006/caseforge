@@ -1,4 +1,4 @@
-import { db } from "@/lib/db"
+import { db } from '@/lib/db'
 import {
   interviewSessions,
   transcripts,
@@ -6,8 +6,8 @@ import {
   interviewTemplates,
   firmStyleEnum,
   interviewTypeEnum,
-} from "@/lib/db/schema"
-import { eq, desc } from "drizzle-orm"
+} from '@/lib/db/schema'
+import { eq, desc } from 'drizzle-orm'
 
 export async function createSession(data: {
   userId: string
@@ -21,12 +21,21 @@ export async function createSession(data: {
   return session!
 }
 
-export async function createTranscript(sessionId: string, firstTurn: { role: "interviewer"; content: string }) {
+export async function createTranscript(
+  sessionId: string,
+  firstTurn: { role: 'interviewer'; content: string }
+) {
   const [transcript] = await db
     .insert(transcripts)
     .values({
       sessionId,
-      turns: [{ role: firstTurn.role, content: firstTurn.content, timestamp: new Date().toISOString() }],
+      turns: [
+        {
+          role: firstTurn.role,
+          content: firstTurn.content,
+          timestamp: new Date().toISOString(),
+        },
+      ],
     })
     .returning()
   return transcript!
@@ -34,7 +43,7 @@ export async function createTranscript(sessionId: string, firstTurn: { role: "in
 
 export async function appendTurn(
   sessionId: string,
-  turn: { role: "interviewer" | "user"; content: string }
+  turn: { role: 'interviewer' | 'user'; content: string }
 ) {
   const [current] = await db
     .select()
@@ -45,7 +54,10 @@ export async function appendTurn(
   if (!current) {
     const [created] = await db
       .insert(transcripts)
-      .values({ sessionId, turns: [{ ...turn, timestamp: new Date().toISOString() }] })
+      .values({
+        sessionId,
+        turns: [{ ...turn, timestamp: new Date().toISOString() }],
+      })
       .returning()
     await db
       .update(interviewSessions)
@@ -54,7 +66,11 @@ export async function appendTurn(
     return created!
   }
 
-  const turns = current.turns as Array<{ role: string; content: string; timestamp: string }>
+  const turns = current.turns as Array<{
+    role: string
+    content: string
+    timestamp: string
+  }>
   turns.push({ ...turn, timestamp: new Date().toISOString() })
 
   await db
@@ -103,7 +119,7 @@ export async function completeSession(sessionId: string) {
   const [updated] = await db
     .update(interviewSessions)
     .set({
-      status: "evaluation_pending",
+      status: 'evaluation_pending',
       completedAt: now,
       durationSeconds,
     })

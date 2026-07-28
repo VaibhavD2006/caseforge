@@ -9,7 +9,12 @@ import {
   buildDirectorState,
   buildDirectorBlock,
 } from '@/lib/ai/interview-director'
-import { FIRM_CONFIGS, normalizeFirmId, firmIdFromFamily, type FirmId } from '@/config/firms/firm-styles'
+import {
+  FIRM_CONFIGS,
+  normalizeFirmId,
+  firmIdFromFamily,
+  type FirmId,
+} from '@/config/firms/firm-styles'
 import { inngest } from '@/inngest/client'
 import type { Message } from '@/lib/ai/providers'
 
@@ -63,7 +68,9 @@ export async function POST(req: Request) {
     (firmId ? normalizeFirmId(firmId) : null) ?? firmIdFromFamily(firmStyle)
   if (!resolvedFirmId) {
     return NextResponse.json(
-      { error: `Cannot resolve firm configuration for session (firmId=${firmId}, firmStyle=${firmStyle})` },
+      {
+        error: `Cannot resolve firm configuration for session (firmId=${firmId}, firmStyle=${firmStyle})`,
+      },
       { status: 400 }
     )
   }
