@@ -15,7 +15,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ dri
   const drill = await getDrillById(drillId)
   if (!drill) return NextResponse.json({ error: "Drill not found" }, { status: 404 })
 
-  const evaluation = await evaluateDrillAttempt(drill, response)
+  let evaluation: Awaited<ReturnType<typeof evaluateDrillAttempt>>
+  try {
+    evaluation = await evaluateDrillAttempt(drill, response)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many Requests")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily unavailable. Please try again in a moment." },
+        { status: 503 }
+      )
+    }
+    throw err
+  }
 
   await createDrillAttempt({
     drillId,

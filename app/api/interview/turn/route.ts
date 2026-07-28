@@ -78,8 +78,14 @@ export async function POST(req: Request) {
         // Persist interviewer turn after streaming completes
         await appendTurn(sessionId, { role: "interviewer", content: fullResponse })
         controller.close()
-      } catch (err) {
-        controller.error(err)
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many Requests")) {
+          controller.enqueue(encoder.encode("\n\n[AI service temporarily unavailable. Please wait a moment and try again.]"))
+          controller.close()
+        } else {
+          controller.error(err)
+        }
       }
     },
   })

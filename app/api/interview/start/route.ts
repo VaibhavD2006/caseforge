@@ -53,8 +53,19 @@ export async function POST(req: Request) {
 
   // Stream the opening interviewer message and collect it
   let openingMessage = ""
-  for await (const chunk of streamInterviewerOpening(systemPrompt)) {
-    openingMessage += chunk
+  try {
+    for await (const chunk of streamInterviewerOpening(systemPrompt)) {
+      openingMessage += chunk
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes("429") || msg.includes("quota") || msg.includes("Too Many Requests")) {
+      return NextResponse.json(
+        { error: "AI service is temporarily unavailable. Please try again in a moment." },
+        { status: 503 }
+      )
+    }
+    throw err
   }
 
   // Persist initial transcript
