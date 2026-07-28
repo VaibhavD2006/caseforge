@@ -22,10 +22,10 @@ function getLimiters() {
     })
     registerLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "60 s"), prefix: "rl:register" })
     signInLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "60 s"), prefix: "rl:signin" })
-    // AI endpoints — keyed by userId to prevent per-account abuse
-    interviewStartLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "60 m"), prefix: "rl:ai:interview:start" })
-    interviewTurnLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(120, "60 m"), prefix: "rl:ai:interview:turn" })
-    drillAttemptLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "60 m"), prefix: "rl:ai:drill:attempt" })
+    // AI endpoints — keyed by userId, daily budgets to control Gemini spend
+    interviewStartLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(2, "24 h"), prefix: "rl:ai:interview:start" })
+    interviewTurnLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "24 h"), prefix: "rl:ai:interview:turn" })
+    drillAttemptLimiter = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "24 h"), prefix: "rl:ai:drill:attempt" })
   }
   return {
     register: registerLimiter!,
