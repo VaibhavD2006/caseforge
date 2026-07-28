@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
   const turnCount = data.session.turnCount ?? turns.length
   const directorState = buildDirectorState(userMessage, turnCount, interviewType)
-  const firmConfig = FIRM_CONFIGS[firmId as FirmId]
+  const firmConfig = FIRM_CONFIGS[(firmId ?? firmStyle) as FirmId] ?? FIRM_CONFIGS["mckinsey"]
   if (!firmConfig) {
     return NextResponse.json({ error: `Unknown firmId: ${firmId}` }, { status: 400 })
   }
