@@ -43,7 +43,15 @@ export async function appendTurn(
     .limit(1)
 
   if (!current) {
-    throw new Error(`Transcript not found for session ${sessionId}`)
+    const [created] = await db
+      .insert(transcripts)
+      .values({ sessionId, turns: [{ ...turn, timestamp: new Date().toISOString() }] })
+      .returning()
+    await db
+      .update(interviewSessions)
+      .set({ turnCount: 1 })
+      .where(eq(interviewSessions.id, sessionId))
+    return created!
   }
 
   const turns = current.turns as Array<{ role: string; content: string; timestamp: string }>

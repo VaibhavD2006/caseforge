@@ -41,17 +41,7 @@ export async function POST(req: Request) {
   const caseContext = selectedCase?.contextText
   const systemPrompt = await getInterviewerSystemPrompt(normalizedFirmId, interviewType, caseContext)
 
-  // Create session record
-  const interviewSession = await createSession({
-    userId: session.user.id,
-    templateId: templateId ?? undefined,
-    caseId: selectedCase?.id ?? undefined,
-    firmStyle,
-    firmId: normalizedFirmId,
-    interviewType,
-  })
-
-  // Stream the opening interviewer message and collect it
+  // Stream Gemini BEFORE writing to DB so a quota failure never leaves an orphaned session
   let openingMessage = ""
   try {
     for await (const chunk of streamInterviewerOpening(systemPrompt)) {
@@ -68,7 +58,16 @@ export async function POST(req: Request) {
     throw err
   }
 
-  // Persist initial transcript
+  // AI succeeded — now persist
+  const interviewSession = await createSession({
+    userId: session.user.id,
+    templateId: templateId ?? undefined,
+    caseId: selectedCase?.id ?? undefined,
+    firmStyle,
+    firmId: normalizedFirmId,
+    interviewType,
+  })
+
   await createTranscript(interviewSession.id, {
     role: "interviewer",
     content: openingMessage,
