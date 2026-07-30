@@ -50,7 +50,7 @@ export default async function AnalyticsPage() {
   // Compute firm readiness scores
   const firmReadiness: Record<FirmId, number> = {} as Record<FirmId, number>
   for (const firmId of targetFirms) {
-    firmReadiness[firmId] = computeFirmReadiness(firmId, allScorecards, allSessions)
+    firmReadiness[firmId] = computeFirmReadiness(firmId, allScorecards as Array<{ dimensionScores?: Record<string, { score: number }> | null }>, allSessions)
   }
 
   // Score trend (last 20 evaluated sessions, chronological)
