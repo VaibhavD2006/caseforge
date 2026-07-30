@@ -7,7 +7,7 @@ import { FIRM_CONFIGS, type FirmId } from "@/config/firms/firm-styles"
 
 function computeFirmReadiness(
   firmId: FirmId,
-  scorecards: any[],
+  scorecards: Array<{ dimensionScores?: Record<string, { score: number }> | null | undefined }>,
   sessions: { firmId?: string | null; interviewType: string }[]
 ): number {
   const firmConfig = FIRM_CONFIGS[firmId]
@@ -18,8 +18,9 @@ function computeFirmReadiness(
   if (recentScorecards.length === 0) return 0
 
   const avgScore = recentScorecards.reduce((sum, sc) => {
+    const dims = sc.dimensionScores ?? {}
     const weighted = Object.entries(weights).reduce((s, [dim, w]) => {
-      const dimScore = (sc.dimensionScores as Record<string, { score: number }>)?.[dim]?.score ?? 5
+      const dimScore = dims[dim]?.score ?? 5
       return s + dimScore * w
     }, 0)
     return sum + weighted

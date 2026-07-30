@@ -1,5 +1,5 @@
-import { jsonCompletion, type Message } from "./providers"
-import type { Drill } from "@/lib/db/schema"
+import { jsonCompletion, type Message } from './providers'
+import type { Drill } from '@/lib/db/schema'
 
 type DrillEvalResult = {
   score: number
@@ -8,16 +8,16 @@ type DrillEvalResult = {
 }
 
 export async function evaluateDrillAttempt(
-  drill: Pick<Drill, "title" | "prompt" | "expectedTraits" | "skillFocus">,
+  drill: Pick<Drill, 'title' | 'prompt' | 'expectedTraits' | 'skillFocus'>,
   response: string
 ): Promise<DrillEvalResult> {
   const messages: Message[] = [
     {
-      role: "user",
+      role: 'user',
       content: `You are a consulting interview coach evaluating a candidate's drill response.
 
 Drill: ${drill.title}
-Skill focus: ${drill.skillFocus.replace("_", " ")}
+Skill focus: ${drill.skillFocus.replace('_', ' ')}
 Prompt given to candidate: ${drill.prompt}
 
 Key evaluation criteria (score 1-10):
@@ -39,7 +39,8 @@ Return JSON with:
   const result = await jsonCompletion<DrillEvalResult>(messages)
   return {
     score: Math.min(10, Math.max(1, Math.round(result.score ?? 5))),
-    feedback: result.feedback ?? "No feedback generated.",
-    improvementNote: result.improvementNote ?? "Continue practicing this skill.",
+    feedback: result.feedback ?? 'No feedback generated.',
+    improvementNote:
+      result.improvementNote ?? 'Continue practicing this skill.',
   }
 }
