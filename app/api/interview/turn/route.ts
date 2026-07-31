@@ -17,6 +17,10 @@ import {
 } from '@/config/firms/firm-styles'
 import { inngest } from '@/inngest/client'
 import type { Message } from '@/lib/ai/providers'
+import { estimateTurnCostCents } from '@/lib/ai/cost'
+import { db } from '@/lib/db'
+import { interviewSessions } from '@/lib/db/schema'
+import { eq, sql } from 'drizzle-orm'
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -119,6 +123,13 @@ export async function POST(req: Request) {
           role: 'interviewer',
           content: fullResponse,
         })
+        // Accumulate cost estimate (fire-and-forget — non-critical)
+        const inputChars = systemPrompt.length + history.reduce((n, m) => n + m.content.length, 0)
+        const costCents = estimateTurnCostCents(inputChars, fullResponse.length)
+        db.update(interviewSessions)
+          .set({ aiCostEstimateCents: sql`${interviewSessions.aiCostEstimateCents} + ${costCents}` })
+          .where(eq(interviewSessions.id, sessionId))
+          .catch(() => { /* non-critical */ })
         controller.close()
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)

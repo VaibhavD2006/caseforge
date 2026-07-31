@@ -13,6 +13,8 @@ import {
 } from "drizzle-orm/pg-core"
 import type { AdapterAccountType } from "next-auth/adapters"
 
+export const userRoleEnum = pgEnum("user_role", ["student", "admin", "super_admin"])
+
 // ─── Auth.js v5 Adapter Tables ──────────────────────────────────────────────
 
 export const users = pgTable("users", {
@@ -24,6 +26,8 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified", { mode: "date" }),
   image: text("image"),
   passwordHash: text("password_hash"),
+  role: userRoleEnum("role").notNull().default("student"),
+  organization: text("organization"),
 })
 
 export const accounts = pgTable(
@@ -263,6 +267,7 @@ export const interviewSessions = pgTable("interview_sessions", {
   completedAt: timestamp("completed_at"),
   durationSeconds: integer("duration_seconds"),
   turnCount: integer("turn_count").notNull().default(0),
+  aiCostEstimateCents: decimal("ai_cost_estimate_cents", { precision: 10, scale: 4 }).notNull().default("0"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
@@ -449,6 +454,15 @@ export const leaderboardRankHistory = pgTable("leaderboard_rank_history", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 })
 
+// ─── Admin / Config ───────────────────────────────────────────────────────────
+
+export const configSettings = pgTable("config_settings", {
+  key: text("key").primaryKey(),
+  valueJson: jsonb("value_json").notNull().default({}),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 
 export type User = typeof users.$inferSelect
@@ -470,3 +484,4 @@ export type DrillAttempt = typeof drillAttempts.$inferSelect
 export type LeaderboardProfile = typeof leaderboardProfiles.$inferSelect
 export type LeaderboardScoreCache = typeof leaderboardScoreCache.$inferSelect
 export type LeaderboardRankHistory = typeof leaderboardRankHistory.$inferSelect
+export type ConfigSetting = typeof configSettings.$inferSelect
