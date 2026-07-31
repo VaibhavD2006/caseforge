@@ -124,12 +124,18 @@ export async function POST(req: Request) {
           content: fullResponse,
         })
         // Accumulate cost estimate (fire-and-forget — non-critical)
-        const inputChars = systemPrompt.length + history.reduce((n, m) => n + m.content.length, 0)
+        const inputChars =
+          systemPrompt.length +
+          history.reduce((n, m) => n + m.content.length, 0)
         const costCents = estimateTurnCostCents(inputChars, fullResponse.length)
         db.update(interviewSessions)
-          .set({ aiCostEstimateCents: sql`${interviewSessions.aiCostEstimateCents} + ${costCents}` })
+          .set({
+            aiCostEstimateCents: sql`${interviewSessions.aiCostEstimateCents} + ${costCents}`,
+          })
           .where(eq(interviewSessions.id, sessionId))
-          .catch(() => { /* non-critical */ })
+          .catch(() => {
+            /* non-critical */
+          })
         controller.close()
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)

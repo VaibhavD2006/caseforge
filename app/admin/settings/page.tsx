@@ -1,7 +1,7 @@
-import { getConfigSettings } from "@/lib/db/queries/admin"
-import ConfigSettingsClient from "./settings-client"
+import { getConfigSettings } from '@/lib/db/queries/admin'
+import ConfigSettingsClient from './settings-client'
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic'
 
 export default async function AdminSettingsPage() {
   const settings = await getConfigSettings()
@@ -9,16 +9,19 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-ink text-xl font-bold mb-1">Config Settings</h1>
+        <h1 className="text-ink mb-1 text-xl font-bold">Config Settings</h1>
         <p className="text-ink-muted text-sm">
-          Edit leaderboard rules, season dates, and feature toggles. No code deploy required.
+          Edit leaderboard rules, season dates, and feature toggles. No code
+          deploy required.
         </p>
       </div>
-      <ConfigSettingsClient settings={settings.map((s) => ({
-        key: s.key,
-        value: JSON.stringify(s.valueJson),
-        description: s.description ?? "",
-      }))} />
+      <ConfigSettingsClient
+        settings={settings.map((s) => ({
+          key: s.key,
+          value: JSON.stringify(s.valueJson),
+          description: s.description ?? '',
+        }))}
+      />
     </div>
   )
 }
