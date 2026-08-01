@@ -12,11 +12,32 @@ import {
   type FirmId,
   normalizeFirmId,
 } from '@/config/firms/firm-styles'
+import { Ratelimit } from '@upstash/ratelimit'
+import { Redis } from '@upstash/redis'
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.fixedWindow(1, '4 d'),
+  prefix: 'interview:start',
+})
 
 export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { success, reset } = await ratelimit.limit(session.user.id)
+  if (!success) {
+    const nextAvailable = new Date(reset).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    })
+    return NextResponse.json(
+      { error: `You can only start 1 interview every 4 days. Next available: ${nextAvailable}.` },
+      { status: 429 }
+    )
   }
 
   const body = await req.json()
