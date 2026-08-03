@@ -35,7 +35,9 @@ export async function POST(req: Request) {
       day: 'numeric',
     })
     return NextResponse.json(
-      { error: `You can only start 1 interview every 4 days. Next available: ${nextAvailable}.` },
+      {
+        error: `You can only start 1 interview every 4 days. Next available: ${nextAvailable}.`,
+      },
       { status: 429 }
     )
   }

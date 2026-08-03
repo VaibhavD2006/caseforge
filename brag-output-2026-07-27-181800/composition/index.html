@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CaseForge AI — v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="assets/js/gsap.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#071A0A;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+#stage{position:relative;width:1280px;height:720px;overflow:hidden}
+.sc{position:absolute;inset:0;opacity:0;will-change:opacity}
+.serif{font-family:'DM Serif Display',Georgia,serif}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.grid-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(74,222,128,.5) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(74,222,128,.5) 1px,transparent 1px);
+  background-size:40px 40px;opacity:.028
+}
+.glow-tl{position:absolute;border-radius:50%;pointer-events:none;
+  top:-12%;left:-6%;width:580px;height:580px;
+  background:radial-gradient(circle,rgba(74,222,128,.09),transparent 68%)}
+.glow-br{position:absolute;border-radius:50%;pointer-events:none;
+  bottom:2%;right:-8%;width:400px;height:400px;
+  background:radial-gradient(circle,rgba(34,211,238,.05),transparent 68%)}
+
+/* ── S1 ─────────────────────────────────────────────────── */
+#s1{background:#071A0A}
+#s1-wordmark{font-size:88px;line-height:1;letter-spacing:-2.5px;color:#4ADE80;text-align:center}
+#s1-tagline{color:#FAFAF9;font-size:18px;letter-spacing:-.3px;margin-top:16px;text-align:center}
+
+/* ── S2 ─────────────────────────────────────────────────── */
+#s2{background:#071A0A}
+#s2-panel{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.15);border-radius:20px;
+  padding:26px 24px;width:480px;
+  box-shadow:0 28px 64px rgba(0,0,0,.5),0 0 50px rgba(74,222,128,.05)
+}
+.s2-hdr{color:#86EFAC;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:18px}
+.s2-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.s2-tile{background:rgba(74,222,128,.055);border:1px solid rgba(74,222,128,.08);border-radius:10px;padding:13px 14px}
+.s2-key{color:#7A9F7E;font-size:10px;margin-bottom:5px}
+.s2-val{color:#FAFAF9;font-size:18px;font-weight:700}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:6px}
+.prog-label{color:#7A9F7E;font-size:11px}.prog-pct{color:#4ADE80;font-size:11px;font-weight:700}
+.prog-track{height:5px;background:rgba(74,222,128,.09);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:3px}
+.s2-caption{color:#7A9F7E;font-size:11px;margin-bottom:14px}
+.firm-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.firm-name{color:#A7C4AB;font-size:10.5px;width:68px;flex-shrink:0}
+.firm-track{flex:1;height:3px;background:rgba(74,222,128,.09);border-radius:2px;overflow:hidden}
+.firm-fill{height:100%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:2px}
+.firm-pct{color:#4ADE80;font-size:10px;font-weight:700;width:28px;text-align:right;flex-shrink:0}
+
+/* ── S3 ─────────────────────────────────────────────────── */
+#s3{background:#071A0A}
+#s3-win{
+  width:700px;background:#0B1F0E;border:1px solid rgba(74,222,128,.16);border-radius:18px;
+  overflow:hidden;box-shadow:0 28px 64px rgba(0,0,0,.5),0 0 40px rgba(74,222,128,.04)
+}
+#s3-win-hdr{
+  background:rgba(74,222,128,.05);border-bottom:1px solid rgba(74,222,128,.1);
+  padding:11px 18px;display:flex;align-items:center;justify-content:space-between
+}
+.s3-hdr-left{display:flex;align-items:center;gap:8px}
+.s3-dot{width:8px;height:8px;border-radius:50%;background:#4ADE80}
+.s3-hdr-label{color:#86EFAC;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.s3-hdr-firm{color:#4ADE80;font-size:10px;font-weight:600;
+  background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:100px;padding:3px 10px}
+#s3-body{display:flex}
+#s3-prompt{
+  width:240px;flex-shrink:0;padding:16px 14px;
+  border-right:1px solid rgba(74,222,128,.08);background:rgba(74,222,128,.02)
+}
+.s3-prompt-tag{color:#86EFAC;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.s3-prompt-title{color:#FAFAF9;font-size:12px;font-weight:700;margin-bottom:8px;line-height:1.4}
+.s3-prompt-text{color:#7A9F7E;font-size:10.5px;line-height:1.6}
+#s3-chat{flex:1;padding:16px 14px;min-height:200px;display:flex;flex-direction:column;gap:10px}
+.s3-bubble{padding:9px 13px;border-radius:12px;font-size:12px;line-height:1.6;max-width:90%}
+.s3-bubble.ai{background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.13);
+  color:#FAFAF9;align-self:flex-start;border-bottom-left-radius:3px}
+.s3-bubble.usr{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.2);
+  color:#FAFAF9;align-self:flex-end;border-bottom-right-radius:3px}
+.ai-tag{color:#4ADE80;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+/* Blinking cursor via CSS — seek-safe */
+.s3-cur{display:inline-block;width:2px;height:12px;background:#4ADE80;
+  margin-left:2px;vertical-align:text-bottom;
+  animation:blink-caret 1s step-end infinite}
+@keyframes blink-caret{0%,100%{opacity:1}50%{opacity:0}}
+#s3-wave{padding:8px 14px;border-top:1px solid rgba(74,222,128,.07);
+  display:flex;align-items:flex-end;gap:3px}
+/* Wave bars via CSS keyframes — deterministic */
+.wave-bar{display:inline-block;width:3px;background:#4ADE80;border-radius:1px;opacity:.5;
+  animation:wave-pulse 0.72s ease-in-out infinite alternate}
+@keyframes wave-pulse{from{transform:scaleY(0.3)}to{transform:scaleY(1)}}
+#wb1{height:6px;animation-delay:0s}
+#wb2{height:10px;animation-delay:.09s}
+#wb3{height:8px;animation-delay:.18s}
+#wb4{height:13px;animation-delay:.27s}
+#wb5{height:7px;animation-delay:.36s}
+#wb6{height:14px;animation-delay:.45s}
+#wb7{height:9px;animation-delay:.54s}
+#wb8{height:5px;animation-delay:.63s}
+
+/* ── S4 ─────────────────────────────────────────────────── */
+#s4{background:#071A0A}
+#s4-card{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.18);border-radius:18px;
+  padding:24px 26px 22px;width:400px;
+  box-shadow:0 40px 80px rgba(0,0,0,.55),0 0 60px rgba(74,222,128,.06)
+}
+.s4-chrome{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.chrdot{width:9px;height:9px;border-radius:50%}
+.s4-chrome-label{color:#4ADE80;font-size:10px;margin-left:8px;opacity:.55;letter-spacing:.06em}
+.s4-title{color:#FAFAF9;font-size:12px;font-weight:600;margin-bottom:14px}
+.dim-row{margin-bottom:10px}
+.dim-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.dim-label{color:#A7C4AB;font-size:11px}
+.dim-score{color:#4ADE80;font-size:11px;font-weight:700}
+.bar-track{height:4px;background:rgba(74,222,128,.1);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#16A34A,#4ADE80);border-radius:2px}
+#s4-feedback{
+  margin-top:14px;background:rgba(74,222,128,.06);border-radius:10px;
+  padding:10px 13px;border:1px solid rgba(74,222,128,.11)
+}
+.fb-label{color:#86EFAC;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.fb-text{color:#A7C4AB;font-size:11.5px;line-height:1.62}
+
+/* ── S5 ─────────────────────────────────────────────────── */
+#s5{background:#071A0A}
+#s5-card{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.15);border-radius:18px;
+  padding:22px 24px;width:380px;
+  box-shadow:0 28px 64px rgba(0,0,0,.5),0 0 40px rgba(74,222,128,.05)
+}
+.s5-hdr{color:#86EFAC;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.s5-drill{
+  background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.1);
+  border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px
+}
+.s5-ring{position:relative;width:44px;height:44px;flex-shrink:0}
+.s5-ring svg{transform:rotate(-90deg)}
+.s5-ring-bg{fill:none;stroke:rgba(74,222,128,.12);stroke-width:3.5}
+.s5-ring-fill{fill:none;stroke:#4ADE80;stroke-width:3.5;stroke-linecap:round;
+  stroke-dasharray:113;stroke-dashoffset:113}
+.s5-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:#4ADE80;font-size:9.5px;font-weight:700}
+.s5-info{flex:1}
+.s5-name{color:#FAFAF9;font-size:13px;font-weight:600;margin-bottom:3px}
+.s5-sub{color:#7A9F7E;font-size:11px}
+.s5-action{color:#4ADE80;font-size:11px;font-weight:600;margin-top:5px}
+.s5-tags{display:flex;gap:7px;margin-top:10px}
+.s5-tag{font-size:10px;font-weight:600;padding:4px 10px;border-radius:100px;
+  background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.18);color:rgba(239,68,68,.85)}
+.s5-tag.green{background:rgba(74,222,128,.09);border-color:rgba(74,222,128,.2);color:#86EFAC}
+
+/* ── S6 ─────────────────────────────────────────────────── */
+#s6{background:#071A0A}
+#s6-card{
+  background:#0B1F0E;border:1px solid rgba(74,222,128,.18);border-radius:20px;
+  width:580px;overflow:hidden;
+  box-shadow:0 0 80px rgba(74,222,128,.08),0 40px 80px rgba(0,0,0,.55)
+}
+#s6-card-hdr{
+  padding:13px 20px;border-bottom:1px solid rgba(74,222,128,.10);
+  display:flex;align-items:center;justify-content:space-between
+}
+.s6-hdr-title{color:#FAFAF9;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+.s6-live-dot{width:7px;height:7px;border-radius:50%;background:#4ADE80}
+.s6-campus{color:#86EFAC;font-size:10px;font-weight:600;
+  background:rgba(74,222,128,.09);border:1px solid rgba(74,222,128,.18);border-radius:100px;padding:3px 10px}
+.s6-col-hdr{display:grid;grid-template-columns:36px 1fr 68px 52px;gap:6px;
+  padding:8px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.s6-col-label{color:rgba(255,255,255,.28);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.s6-row{display:grid;grid-template-columns:36px 1fr 68px 52px;gap:6px;
+  padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.04)}
+.s6-row.you{background:rgba(74,222,128,.08);border-left:3px solid #4ADE80;padding-left:17px}
+.s6-rank{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.s6-name-cell{display:flex;flex-direction:column;gap:2px}
+.s6-name{color:#FAFAF9;font-size:12.5px;font-weight:600}
+.s6-tier{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:100px;display:inline-block;margin-top:2px}
+.tier-emerald{color:#4ADE80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25)}
+.tier-gold{color:#eab308;background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.25)}
+.tier-silver{color:#94a3b8;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.25)}
+.s6-score{font-size:13px;font-weight:700;color:#4ADE80;font-variant-numeric:tabular-nums}
+.s6-move{font-size:10.5px;font-weight:700}
+.move-up{color:#4ADE80}
+.move-same{color:rgba(255,255,255,.3)}
+#s6-footer{padding:11px 20px;border-top:1px solid rgba(74,222,128,.10);
+  display:flex;align-items:center;justify-content:space-between}
+.s6-footer-text{color:rgba(255,255,255,.3);font-size:11px}
+.s6-footer-badge{display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;color:#4ADE80;
+  background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);
+  border-radius:100px;padding:4px 10px}
+
+/* ── S7 ─────────────────────────────────────────────────── */
+#s7{background:#071A0A}
+#s7-inner{position:relative;z-index:2;text-align:center}
+#s7-logo{font-size:62px;color:#4ADE80;line-height:1}
+#s7-tagline{color:#FAFAF9;font-size:18px;margin-top:10px;letter-spacing:-.2px}
+#s7-btn{
+  display:inline-block;background:#4ADE80;color:#071A0A;
+  font-family:'Inter',sans-serif;font-size:15px;font-weight:800;
+  padding:14px 38px;border-radius:12px;margin-top:28px;
+  letter-spacing:-.1px
+}
+audio{display:none}
+</style>
+</head>
+<body>
+
+<div id="stage"
+  data-composition-id="root"
+  data-start="0"
+  data-width="1280"
+  data-height="720">
+
+<!-- S1: Brand Hook (0–2.5s) -->
+<div id="s1" class="sc center">
+  <div class="grid-bg"></div>
+  <div class="glow-tl"></div>
+  <div class="glow-br"></div>
+  <div style="position:relative;z-index:2;text-align:center">
+    <div id="s1-wordmark" class="serif">CaseForge</div>
+    <div id="s1-tagline">Crack the case. Every session.</div>
+  </div>
+</div>
+
+<!-- S2: Dashboard Intelligence (2.5–6s) -->
+<div id="s2" class="sc center">
+  <div class="grid-bg"></div>
+  <div class="glow-tl"></div>
+  <div id="s2-panel">
+    <div class="s2-hdr">Readiness Dashboard</div>
+    <div class="s2-grid">
+      <div class="s2-tile" id="st1"><div class="s2-key">Avg Score</div><div class="s2-val">7.4 / 10</div></div>
+      <div class="s2-tile" id="st2"><div class="s2-key">Sessions</div><div class="s2-val">12</div></div>
+      <div class="s2-tile" id="st3"><div class="s2-key">Tier</div><div class="s2-val" style="color:#94a3b8">Silver</div></div>
+      <div class="s2-tile" id="st4"><div class="s2-key">Status</div><div class="s2-val" style="color:#4ADE80">On Track</div></div>
+    </div>
+    <div class="prog-hdr">
+      <span class="prog-label">Readiness progress</span>
+      <span class="prog-pct">74%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="s2-bar" style="width:0%"></div></div>
+    <div class="s2-caption">~4 sessions to interview-ready</div>
+    <div class="firm-row" id="fr1">
+      <span class="firm-name">McKinsey</span>
+      <div class="firm-track"><div class="firm-fill" id="ff1" style="width:0%"></div></div>
+      <span class="firm-pct">68%</span>
+    </div>
+    <div class="firm-row" id="fr2">
+      <span class="firm-name">BCG</span>
+      <div class="firm-track"><div class="firm-fill" id="ff2" style="width:0%"></div></div>
+      <span class="firm-pct">71%</span>
+    </div>
+    <div class="firm-row" id="fr3">
+      <span class="firm-name">Bain</span>
+      <div class="firm-track"><div class="firm-fill" id="ff3" style="width:0%"></div></div>
+      <span class="firm-pct">75%</span>
+    </div>
+  </div>
+</div>
+
+<!-- S3: Live AI Interview (6–10.5s) -->
+<div id="s3" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s3-win">
+    <div id="s3-win-hdr">
+      <div class="s3-hdr-left">
+        <span class="s3-dot"></span>
+        <span class="s3-hdr-label">AI Interviewer</span>
+      </div>
+      <span class="s3-hdr-firm">McKinsey · Profitability Case</span>
+    </div>
+    <div id="s3-body">
+      <div id="s3-prompt">
+        <div class="s3-prompt-tag">Case Prompt</div>
+        <div class="s3-prompt-title">Our client is a US retail chain. Profits declined 18% YoY. What's driving this?</div>
+        <div class="s3-prompt-text">Structure your approach, walk through the key drivers, and recommend where to focus first.</div>
+      </div>
+      <div id="s3-chat">
+        <div class="s3-bubble ai">
+          <div class="ai-tag">AI Interviewer</div>
+          <span id="s3-typed"></span><span class="s3-cur" id="s3-cursor"></span>
+        </div>
+        <div class="s3-bubble usr" id="s3-b2">
+          I'd break this into Revenue and Cost. On the revenue side, volume or pricing—
+        </div>
+        <div class="s3-bubble ai" id="s3-b3">
+          <div class="ai-tag">AI Interviewer</div>
+          Good. Where would you focus first in the cost structure?
+        </div>
+      </div>
+    </div>
+    <div id="s3-wave">
+      <span style="color:#4ADE80;font-size:9.5px;font-weight:700;opacity:.5;letter-spacing:.08em;text-transform:uppercase;margin-right:4px">Listening</span>
+      <span class="wave-bar" id="wb1"></span>
+      <span class="wave-bar" id="wb2"></span>
+      <span class="wave-bar" id="wb3"></span>
+      <span class="wave-bar" id="wb4"></span>
+      <span class="wave-bar" id="wb5"></span>
+      <span class="wave-bar" id="wb6"></span>
+      <span class="wave-bar" id="wb7"></span>
+      <span class="wave-bar" id="wb8"></span>
+    </div>
+  </div>
+</div>
+
+<!-- S4: Scorecard (10.5–14s) -->
+<div id="s4" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s4-card">
+    <div class="s4-chrome">
+      <span class="chrdot" style="background:#ef4444"></span>
+      <span class="chrdot" style="background:#f59e0b"></span>
+      <span class="chrdot" style="background:#22c55e"></span>
+      <span class="s4-chrome-label">Session Scorecard</span>
+    </div>
+    <div class="s4-title">Profitability Case — McKinsey style</div>
+    <div class="dim-row" id="r1"><div class="dim-hdr"><span class="dim-label">Structure</span><span class="dim-score">8.2 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b1" style="width:0%"></div></div></div>
+    <div class="dim-row" id="r2"><div class="dim-hdr"><span class="dim-label">Hypothesis</span><span class="dim-score">7.5 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b2" style="width:0%"></div></div></div>
+    <div class="dim-row" id="r3"><div class="dim-hdr"><span class="dim-label">Numerics</span><span class="dim-score">6.8 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b3" style="width:0%"></div></div></div>
+    <div class="dim-row" id="r4"><div class="dim-hdr"><span class="dim-label">Synthesis</span><span class="dim-score">7.9 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b4" style="width:0%"></div></div></div>
+    <div class="dim-row" id="r5"><div class="dim-hdr"><span class="dim-label">Communication</span><span class="dim-score">8.5 / 10</span></div><div class="bar-track"><div class="bar-fill" id="b5" style="width:0%"></div></div></div>
+    <div id="s4-feedback">
+      <div class="fb-label">AI Feedback</div>
+      <div class="fb-text">Strong structure. Quantify the revenue impact before pivoting to cost drivers.</div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: Growth Loop (14–16.5s) -->
+<div id="s5" class="sc center">
+  <div class="grid-bg"></div>
+  <div id="s5-card">
+    <div class="s5-hdr">Recommended Drills</div>
+    <div class="s5-drill">
+      <div class="s5-ring">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle class="s5-ring-bg" cx="22" cy="22" r="18"/>
+          <circle class="s5-ring-fill" id="s5-ring" cx="22" cy="22" r="18"/>
+        </svg>
+        <div class="s5-ring-pct">40%</div>
+      </div>
+      <div class="s5-info">
+        <div class="s5-name">Case Math Drills</div>
+        <div class="s5-sub">Weak area · 6.8 / 10</div>
+        <div class="s5-action">Start drill →</div>
+      </div>
+    </div>
+    <div class="s5-tags" id="s5-tags">
+      <span class="s5-tag">Numerics · 6.8</span>
+      <span class="s5-tag green">+0.8 pts potential</span>
+    </div>
+  </div>
+</div>
+
+<!-- S6: Leaderboard Reveal (16.5–21s) -->
+<div id="s6" class="sc center">
+  <div class="grid-bg"></div>
+  <div class="glow-tl"></div>
+  <div id="s6-card">
+    <div id="s6-card-hdr">
+      <div class="s6-hdr-title">
+        <span class="s6-live-dot"></span>
+        Campus Leaderboard
+      </div>
+      <span class="s6-campus">Harvard Business</span>
+    </div>
+    <div class="s6-col-hdr">
+      <span class="s6-col-label">#</span>
+      <span class="s6-col-label">Candidate</span>
+      <span class="s6-col-label">Score</span>
+      <span class="s6-col-label">Move</span>
+    </div>
+    <div class="s6-row" id="lr1">
+      <span class="s6-rank" style="color:#eab308">1</span>
+      <div class="s6-name-cell"><span class="s6-name">A. Chen</span><span class="s6-tier tier-emerald">Emerald</span></div>
+      <span class="s6-score">9.4</span><span class="s6-move move-same">—</span>
+    </div>
+    <div class="s6-row" id="lr2">
+      <span class="s6-rank" style="color:#94a3b8">2</span>
+      <div class="s6-name-cell"><span class="s6-name">M. Patel</span><span class="s6-tier tier-emerald">Emerald</span></div>
+      <span class="s6-score">9.1</span><span class="s6-move move-same">—</span>
+    </div>
+    <div class="s6-row" id="lr3">
+      <span class="s6-rank" style="color:#cd7f32">3</span>
+      <div class="s6-name-cell"><span class="s6-name">J. Williams</span><span class="s6-tier tier-gold">Gold</span></div>
+      <span class="s6-score">8.7</span><span class="s6-move move-up">↑2</span>
+    </div>
+    <div class="s6-row" id="lr4">
+      <span class="s6-rank" style="color:rgba(255,255,255,.4)">4</span>
+      <div class="s6-name-cell"><span class="s6-name">S. Kim</span><span class="s6-tier tier-gold">Gold</span></div>
+      <span class="s6-score">8.4</span><span class="s6-move move-same">—</span>
+    </div>
+    <div class="s6-row" id="lr5">
+      <span class="s6-rank" style="color:rgba(255,255,255,.4)">5</span>
+      <div class="s6-name-cell"><span class="s6-name">R. Torres</span><span class="s6-tier tier-gold">Gold</span></div>
+      <span class="s6-score">8.2</span><span class="s6-move move-up">↑3</span>
+    </div>
+    <!-- Highlighted "You" row -->
+    <div class="s6-row you" id="lr-you">
+      <span class="s6-rank" id="s6-you-rank" style="color:#4ADE80">7</span>
+      <div class="s6-name-cell"><span class="s6-name" style="color:#4ADE80">You</span><span class="s6-tier tier-silver">Silver</span></div>
+      <span class="s6-score">8.1</span><span class="s6-move move-up">↑4</span>
+    </div>
+    <div id="s6-footer">
+      <span class="s6-footer-text">Top 23% at Harvard Business</span>
+      <div class="s6-footer-badge" id="s6-badge">↑4 this week</div>
+    </div>
+  </div>
+</div>
+
+<!-- S7: CTA (21–24s) -->
+<div id="s7" class="sc center">
+  <div class="glow-tl"></div>
+  <div id="s7-inner">
+    <div id="s7-logo" class="serif">CaseForge</div>
+    <div id="s7-tagline">Get the offer.</div>
+    <div id="s7-btn">Start practicing free →</div>
+  </div>
+</div>
+
+</div><!-- #stage -->
+
+<!-- Audio — Hyperframes manages playback via data-start / data-track-index -->
+<audio id="music" data-start="0" data-duration="24" data-track-index="10" data-volume="0.32"
+  src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" preload="auto"></audio>
+
+<!-- SFX: dashboard tile drops -->
+<audio id="sfx-d1" data-start="3.00" data-track-index="11" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg" preload="auto"></audio>
+<audio id="sfx-d2" data-start="3.40" data-track-index="12" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg" preload="auto"></audio>
+<audio id="sfx-d3" data-start="3.80" data-track-index="13" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg" preload="auto"></audio>
+<audio id="sfx-d4" data-start="4.20" data-track-index="14" data-volume="0.55" src="assets/sfx/interface/drop_001.ogg" preload="auto"></audio>
+
+<!-- SFX: scorecard bars -->
+<audio id="sfx-b1" data-start="11.20" data-track-index="15" data-volume="0.50" src="assets/sfx/interface/drop_002.ogg" preload="auto"></audio>
+<audio id="sfx-b2" data-start="11.73" data-track-index="16" data-volume="0.50" src="assets/sfx/interface/drop_002.ogg" preload="auto"></audio>
+<audio id="sfx-b3" data-start="12.27" data-track-index="17" data-volume="0.50" src="assets/sfx/interface/drop_002.ogg" preload="auto"></audio>
+<audio id="sfx-b4" data-start="12.80" data-track-index="18" data-volume="0.50" src="assets/sfx/interface/drop_002.ogg" preload="auto"></audio>
+<audio id="sfx-b5" data-start="13.33" data-track-index="19" data-volume="0.50" src="assets/sfx/interface/drop_002.ogg" preload="auto"></audio>
+
+<!-- SFX: AI feedback bell -->
+<audio id="sfx-fb-bell" data-start="13.70" data-track-index="20" data-volume="0.40" src="assets/sfx/impact/impactBell_heavy_000.ogg" preload="auto"></audio>
+
+<!-- SFX: leaderboard row cascade -->
+<audio id="sfx-lr1" data-start="16.82" data-track-index="21" data-volume="0.48" src="assets/sfx/casino/card-place-1.ogg" preload="auto"></audio>
+<audio id="sfx-lr2" data-start="17.05" data-track-index="22" data-volume="0.48" src="assets/sfx/casino/card-place-2.ogg" preload="auto"></audio>
+<audio id="sfx-lr3" data-start="17.30" data-track-index="23" data-volume="0.48" src="assets/sfx/casino/card-place-3.ogg" preload="auto"></audio>
+<audio id="sfx-lr4" data-start="17.55" data-track-index="24" data-volume="0.48" src="assets/sfx/casino/card-place-1.ogg" preload="auto"></audio>
+<audio id="sfx-lr5" data-start="17.80" data-track-index="25" data-volume="0.48" src="assets/sfx/casino/card-place-2.ogg" preload="auto"></audio>
+
+<!-- SFX: "You" row + rank-climb bell — emotional peak (beat-locked 18.02s) -->
+<audio id="sfx-you-bell" data-start="18.02" data-track-index="26" data-volume="0.62" src="assets/sfx/impact/impactBell_heavy_003.ogg" preload="auto"></audio>
+
+<!-- SFX: CTA -->
+<audio id="sfx-cta" data-start="21.40" data-track-index="27" data-volume="0.50" src="assets/sfx/interface/click_001.ogg" preload="auto"></audio>
+
+<script>
+// ── Typing animation (GSAP onUpdate — seek-safe) ──────────
+const AI_Q = "What would drive the cost reduction in year one?";
+const typingState = { chars: 0 };
+
+// ── Rank climb at specific times (GSAP-driven) ─────────────
+// Rank changes: 18.10s → 7, 18.50s → 5, 18.90s → 3
+const rankState = { rank: 7 };
+
+function setRank(r) {
+  const el = document.getElementById('s6-you-rank');
+  if (!el) return;
+  el.textContent = r;
+  gsap.fromTo(el, { scale: 1.5 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' });
+}
+
+// ── Master timeline (Hyperframes-registered) ───────────────
+document.fonts.ready.then(() => {
+
+  // Set initial visual states (GSAP set — not CSS transforms)
+  gsap.set('#s1', { opacity: 1 });
+  gsap.set(['#s2','#s3','#s4','#s5','#s6','#s7'], { opacity: 0 });
+  gsap.set(['#st1','#st2','#st3','#st4'], { opacity: 0, y: 7 });
+  gsap.set(['#fr1','#fr2','#fr3'], { opacity: 0 });
+  gsap.set('#s2-bar', { width: '0%' });
+  gsap.set(['#ff1','#ff2','#ff3'], { width: '0%' });
+  gsap.set('#s3-b2', { opacity: 0 });
+  gsap.set('#s3-b3', { opacity: 0 });
+  gsap.set(['#r1','#r2','#r3','#r4','#r5'], { opacity: 0, y: 5 });
+  gsap.set(['#b1','#b2','#b3','#b4','#b5'], { width: '0%' });
+  gsap.set('#s4-feedback', { opacity: 0, y: 6 });
+  gsap.set('#s5-card', { opacity: 0, x: -32 });
+  gsap.set('#s5-tags', { opacity: 0 });
+  gsap.set('#s5-ring', { strokeDashoffset: 113 });
+  gsap.set('#s6-card', { opacity: 0, y: 28 });
+  gsap.set(['.s6-row'], { opacity: 0, x: 12 });
+  gsap.set('#s6-badge', { opacity: 0 });
+  gsap.set('#s7-btn', { opacity: 0, y: 12 }); // initial state via gsap.set not CSS
+
+  const tl = gsap.timeline({ paused: true });
+
+  // ── S1: Brand Hook (0–2.5s) ────────────────────────
+  tl.from('#s1-wordmark', { opacity: 0, y: 30, duration: 0.45, ease: 'power3.out' }, 0.55) // beat: 0.55s
+    .from('#s1-tagline',  { opacity: 0, y: 16, duration: 0.35, ease: 'power2.out' }, 1.10)
+    // S1 → S2
+    .to('#s1', { opacity: 0, duration: 0.28, ease: 'power2.inOut' }, 2.22)
+    .to('#s2', { opacity: 1, duration: 0.28, ease: 'power2.inOut' }, 2.22)
+
+  // ── S2: Dashboard (2.5–6s) ─────────────────────────
+    .from('#s2-panel', { x: 40, opacity: 0, duration: 0.42, ease: 'power3.out' }, 2.55)
+    .to('#st1', { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, 3.00) // beat-grid
+    .to('#st2', { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, 3.40)
+    .to('#st3', { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, 3.80)
+    .to('#st4', { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, 4.20)
+    .to('#s2-bar', { width: '74%', duration: 1.0, ease: 'power2.out' }, 4.55)
+    .to('#fr1', { opacity: 1, duration: 0.20 }, 5.10)
+    .to('#ff1', { width: '68%', duration: 0.55, ease: 'power2.out' }, 5.12)
+    .to('#fr2', { opacity: 1, duration: 0.20 }, 5.28)
+    .to('#ff2', { width: '71%', duration: 0.55, ease: 'power2.out' }, 5.30)
+    .to('#fr3', { opacity: 1, duration: 0.20 }, 5.46)
+    .to('#ff3', { width: '75%', duration: 0.55, ease: 'power2.out' }, 5.48)
+    // S2 → S3
+    .to('#s2', { opacity: 0, duration: 0.28 }, 5.82)
+    .to('#s3', { opacity: 1, duration: 0.28 }, 5.82)
+
+  // ── S3: Live AI Interview (6–10.5s) ────────────────
+  // beat-locked interview entrance at 6.10s; AI follow-up at 8.74s
+    .from('#s3-win', { y: 24, opacity: 0, duration: 0.40, ease: 'power3.out' }, 6.10)
+    // Typing via onUpdate — seek-safe
+    .to(typingState, {
+      chars: AI_Q.length,
+      duration: AI_Q.length / 13,
+      ease: 'none',
+      onUpdate() {
+        const typed = document.getElementById('s3-typed');
+        if (typed) typed.textContent = AI_Q.slice(0, Math.round(typingState.chars));
+      }
+    }, 6.60)
+    // User response at 8.74s (strongCue beat-locked)
+    .to('#s3-b2', { opacity: 1, duration: 0.28, ease: 'power2.out' }, 8.74) // beat-locked: 8.74s
+    .to('#s3-b3', { opacity: 1, duration: 0.28, ease: 'power2.out' }, 9.55)
+    // S3 → S4
+    .to('#s3', { opacity: 0, duration: 0.32 }, 10.18)
+    .to('#s4', { opacity: 1, duration: 0.32 }, 10.18)
+
+  // ── S4: Scorecard (10.5–14s) ───────────────────────
+    .from('#s4-card', { scale: 0.96, opacity: 0, duration: 0.40, ease: 'back.out(1.4)' }, 10.32)
+
+  // 5 dim bars, beat-grid starting ~11.20s
+  ;[
+    { row: '#r1', bar: '#b1', w: '82%', t: 11.20 }, // beat-grid: 11.20s
+    { row: '#r2', bar: '#b2', w: '75%', t: 11.73 },
+    { row: '#r3', bar: '#b3', w: '68%', t: 12.27 },
+    { row: '#r4', bar: '#b4', w: '79%', t: 12.80 },
+    { row: '#r5', bar: '#b5', w: '85%', t: 13.33 },
+  ].forEach(({ row, bar, w, t }) => {
+    tl.to(row, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' }, t)
+      .to(bar, { width: w, duration: 0.44, ease: 'power2.out' }, t + 0.04);
+  });
+
+  tl.to('#s4-feedback', { opacity: 1, y: 0, duration: 0.28, ease: 'power2.out' }, 13.70)
+    // S4 → S5
+    .to('#s4', { opacity: 0, duration: 0.28 }, 14.22)
+    .to('#s5', { opacity: 1, duration: 0.28 }, 14.22)
+
+  // ── S5: Growth Loop (14–16.5s) ─────────────────────
+    .to('#s5-card', { x: 0, opacity: 1, duration: 0.38, ease: 'power3.out' }, 14.32)
+    .to('#s5-ring', { strokeDashoffset: 68, duration: 0.80, ease: 'power2.out' }, 14.60) // 40% progress: offset = 113*(1-0.4)=67.8
+    .to('#s5-tags', { opacity: 1, duration: 0.25, ease: 'power2.out' }, 15.32)
+    // S5 → S6
+    .to('#s5', { opacity: 0, duration: 0.30 }, 16.22)
+    .to('#s6', { opacity: 1, duration: 0.30 }, 16.22)
+
+  // ── S6: Leaderboard Reveal (16.5–21s) ──────────────
+  // Emotional peak — bell at 18.02s (strongCue beat-locked)
+    .to('#s6-card', { y: 0, opacity: 1, duration: 0.40, ease: 'power3.out' }, 16.62)
+    // Top 5 rows cascade in, aligned to card-place SFX timing
+    .to('#lr1', { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }, 16.82) // beat-grid
+    .to('#lr2', { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }, 17.05)
+    .to('#lr3', { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }, 17.28)
+    .to('#lr4', { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }, 17.51)
+    .to('#lr5', { opacity: 1, x: 0, duration: 0.22, ease: 'power2.out' }, 17.74)
+    // "You" row glows in at 18.02s — beat-locked: 18.02s (strongCue)
+    .to('#lr-you', { opacity: 1, x: 0, duration: 0.30, ease: 'back.out(1.4)' }, 18.02) // beat-locked: 18.02s
+    // Rank climb: 7→5→3 on timeline via rankState tweens
+    .add(() => { setRank(5); }, 18.50)
+    .add(() => { setRank(3); }, 18.90)
+    // Badge
+    .to('#s6-badge', { opacity: 1, duration: 0.28, ease: 'power2.out' }, 19.22)
+    // S6 → S7
+    .to('#s6', { opacity: 0, duration: 0.32 }, 20.62)
+    .to('#s7', { opacity: 1, duration: 0.32 }, 20.62)
+
+  // ── S7: CTA (21–24s) ───────────────────────────────
+    .from('#s7-logo',    { opacity: 0, scale: 0.92, duration: 0.36, ease: 'back.out(1.5)' }, 20.78)
+    .from('#s7-tagline', { opacity: 0, y: 10, duration: 0.28, ease: 'power2.out' }, 21.24)
+    .to('#s7-btn', { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out' }, 21.62) // beat-locked near 21.47s
+    .to('#s7', { opacity: 0, duration: 0.50 }, 23.50);
+
+  // Register timeline for Hyperframes control
+  window.__timelines = window.__timelines || {};
+  window.__timelines['root'] = tl;
+
+});
+</script>
+</body>
+</html>

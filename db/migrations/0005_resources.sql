@@ -65,25 +65,48 @@ INSERT INTO resource_categories (id, name, slug, description, icon, sort_order) 
   (gen_random_uuid()::text, 'Videos & Primers', 'videos', 'Video walkthroughs and primers', 'Play', 6)
 ON CONFLICT DO NOTHING;
 
--- Seed some starter resources
-INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published)
-SELECT
-  gen_random_uuid()::text, title, slug, description, format::resource_format, difficulty::resource_difficulty, tags, is_featured, true
-FROM (VALUES
-  ('What is Management Consulting?', 'what-is-consulting', 'A clear explanation of what consultants do, who hires them, and why it matters for your career.', 'definition', 'beginner', ARRAY['consulting','basics','101'], true),
-  ('What is a Case Interview?', 'what-is-case-interview', 'Everything you need to know about case interviews — structure, format, and what interviewers are looking for.', 'definition', 'beginner', ARRAY['case interview','basics','101'], true),
-  ('What is MBB?', 'what-is-mbb', 'McKinsey, BCG, and Bain explained — culture, differences, and how to target them.', 'definition', 'beginner', ARRAY['MBB','McKinsey','BCG','Bain'], true),
-  ('Profitability Framework Guide', 'profitability-framework', 'Step-by-step guide to structuring a profitability case from revenues and costs to root cause.', 'guide', 'intermediate', ARRAY['framework','profitability','structure'], true),
-  ('Market Sizing: How to Estimate Anything', 'market-sizing-guide', 'A structured approach to market sizing with examples and common estimation anchors.', 'guide', 'intermediate', ARRAY['market sizing','math','estimation'], false),
-  ('Case Interview Fundamentals', 'case-interview-fundamentals', 'The complete beginner guide to case interviews — from opening to recommendation.', 'guide', 'beginner', ARRAY['fundamentals','structure','synthesis'], true),
-  ('Case in Point', 'case-in-point', 'The classic case interview prep book by Marc Cosentino. Covers frameworks, math, and practice cases.', 'book', 'all_levels', ARRAY['book','frameworks','cases'], false),
-  ('Fit Interview Prep Guide', 'fit-interview-guide', 'How to prepare your personal experience stories using the STAR method for consulting behavioral rounds.', 'guide', 'beginner', ARRAY['fit','behavioral','STAR'], false)
-) AS t(title, slug, description, format, difficulty, tags, is_featured)
-ON CONFLICT DO NOTHING;
+-- Seed resources (use ON CONFLICT on slug which is unique)
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'What is Management Consulting?', 'what-is-consulting', 'A clear explanation of what consultants do, who hires them, and why it matters for your career.', 'definition', 'beginner', ARRAY['consulting','basics','101'], true, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'What is a Case Interview?', 'what-is-case-interview', 'Everything you need to know about case interviews — structure, format, and what interviewers are looking for.', 'definition', 'beginner', ARRAY['case interview','basics','101'], true, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'What is MBB?', 'what-is-mbb', 'McKinsey, BCG, and Bain explained — culture, differences, and how to target them.', 'definition', 'beginner', ARRAY['MBB','McKinsey','BCG','Bain'], true, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'Profitability Framework Guide', 'profitability-framework', 'Step-by-step guide to structuring a profitability case from revenues and costs to root cause.', 'guide', 'intermediate', ARRAY['framework','profitability','structure'], true, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'Market Sizing: How to Estimate Anything', 'market-sizing-guide', 'A structured approach to market sizing with examples and common estimation anchors.', 'guide', 'intermediate', ARRAY['market sizing','math','estimation'], false, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'Case Interview Fundamentals', 'case-interview-fundamentals', 'The complete beginner guide to case interviews — from opening to recommendation.', 'guide', 'beginner', ARRAY['fundamentals','structure','synthesis'], true, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'Case in Point', 'case-in-point', 'The classic case interview prep book by Marc Cosentino. Covers frameworks, math, and practice cases.', 'book', 'all_levels', ARRAY['book','frameworks','cases'], false, true)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO resources (id, title, slug, description, format, difficulty, tags, is_featured, is_published) VALUES
+  (gen_random_uuid()::text, 'Fit Interview Prep Guide', 'fit-interview-guide', 'How to prepare your personal experience stories using the STAR method for consulting behavioral rounds.', 'guide', 'beginner', ARRAY['fit','behavioral','STAR'], false, true)
+ON CONFLICT (slug) DO NOTHING;
 
 -- Seed practice listings
 INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
-  (gen_random_uuid()::text, 'Book a Mock Interview with 180DC', 'Schedule a live case practice session with an experienced 180 Degrees Consulting team member.', 'expert', NULL, '180DC NC State', 45, 1),
-  (gen_random_uuid()::text, 'Shadow a Case Session', 'Observe a live case interview between experienced members to learn best practices.', 'shadow', NULL, '180DC NC State', 30, 2),
+  (gen_random_uuid()::text, 'Book a Mock Interview with 180DC', 'Schedule a live case practice session with an experienced 180 Degrees Consulting team member.', 'expert', NULL, '180DC NC State', 45, 1)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
+  (gen_random_uuid()::text, 'Shadow a Case Session', 'Observe a live case interview between experienced members to learn best practices.', 'shadow', NULL, '180DC NC State', 30, 2)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
   (gen_random_uuid()::text, 'Peer Practice Matching', 'Get paired with another student for mutual case practice. Great for building confidence.', 'peer', NULL, NULL, 30, 3)
 ON CONFLICT DO NOTHING;
