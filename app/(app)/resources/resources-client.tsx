@@ -3,12 +3,14 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { Search, Star, ExternalLink, BookOpen, Calendar, Users, Eye } from "lucide-react"
+import { AppNav } from "@/components/app-nav"
 
 type Resource = {
   id: string
   title: string
   slug: string
   description: string
+  content: string | null
   format: string
   difficulty: string
   categoryId: string | null
@@ -18,7 +20,6 @@ type Resource = {
   externalUrl: string | null
   author: string | null
   source: string | null
-  createdAt: Date
 }
 
 type Category = {
@@ -159,9 +160,11 @@ export default function ResourcesClient({
   const isFiltering = search || format !== "all" || difficulty !== "all"
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
+    <div className="min-h-screen bg-bg">
+      <AppNav />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Header */}
+        <div>
         <h1 className="text-ink text-2xl font-bold mb-1">Resource Library</h1>
         <p className="text-ink-muted text-sm">Everything you need for consulting prep, organized in one place.</p>
       </div>
@@ -304,5 +307,6 @@ export default function ResourcesClient({
         </div>
       )}
     </div>
+  </div>
   )
 }

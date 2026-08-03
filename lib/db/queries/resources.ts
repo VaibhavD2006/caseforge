@@ -3,12 +3,36 @@ import { resources, resourceCategories, practiceListings } from "@/lib/db/schema
 import { eq, ilike, or, and, desc, sql } from "drizzle-orm"
 
 export async function getResourceCategories() {
-  return db.select().from(resourceCategories).orderBy(resourceCategories.sortOrder)
+  const cols = {
+    id: resourceCategories.id,
+    name: resourceCategories.name,
+    slug: resourceCategories.slug,
+    description: resourceCategories.description,
+    icon: resourceCategories.icon,
+    sortOrder: resourceCategories.sortOrder,
+  }
+  return db.select(cols).from(resourceCategories).orderBy(resourceCategories.sortOrder)
 }
 
 export async function getFeaturedResources(limit = 6) {
+  const cols = {
+    id: resources.id,
+    title: resources.title,
+    slug: resources.slug,
+    description: resources.description,
+    content: resources.content,
+    format: resources.format,
+    difficulty: resources.difficulty,
+    categoryId: resources.categoryId,
+    tags: resources.tags,
+    isFeatured: resources.isFeatured,
+    viewCount: resources.viewCount,
+    externalUrl: resources.externalUrl,
+    author: resources.author,
+    source: resources.source,
+  }
   return db
-    .select()
+    .select(cols)
     .from(resources)
     .where(and(eq(resources.isFeatured, true), eq(resources.isPublished, true)))
     .orderBy(desc(resources.createdAt))
@@ -48,6 +72,7 @@ export async function getResources({
     title: resources.title,
     slug: resources.slug,
     description: resources.description,
+    content: resources.content,
     format: resources.format,
     difficulty: resources.difficulty,
     categoryId: resources.categoryId,
@@ -57,7 +82,6 @@ export async function getResources({
     externalUrl: resources.externalUrl,
     author: resources.author,
     source: resources.source,
-    createdAt: resources.createdAt,
   }
 
   if (categorySlug) {
@@ -77,8 +101,24 @@ export async function getResources({
 }
 
 export async function getResourceBySlug(slug: string) {
+  const cols = {
+    id: resources.id,
+    title: resources.title,
+    slug: resources.slug,
+    description: resources.description,
+    content: resources.content,
+    format: resources.format,
+    difficulty: resources.difficulty,
+    categoryId: resources.categoryId,
+    tags: resources.tags,
+    isFeatured: resources.isFeatured,
+    viewCount: resources.viewCount,
+    externalUrl: resources.externalUrl,
+    author: resources.author,
+    source: resources.source,
+  }
   const [resource] = await db
-    .select()
+    .select(cols)
     .from(resources)
     .where(and(eq(resources.slug, slug), eq(resources.isPublished, true)))
     .limit(1)
@@ -93,8 +133,18 @@ export async function incrementViewCount(id: string) {
 }
 
 export async function getPracticeListings() {
+  const cols = {
+    id: practiceListings.id,
+    title: practiceListings.title,
+    description: practiceListings.description,
+    type: practiceListings.type,
+    bookingUrl: practiceListings.bookingUrl,
+    hostName: practiceListings.hostName,
+    durationMinutes: practiceListings.durationMinutes,
+    sortOrder: practiceListings.sortOrder,
+  }
   return db
-    .select()
+    .select(cols)
     .from(practiceListings)
     .where(eq(practiceListings.isActive, true))
     .orderBy(practiceListings.sortOrder)

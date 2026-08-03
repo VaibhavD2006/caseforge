@@ -19,7 +19,6 @@ type Resource = {
   externalUrl: string | null
   author: string | null
   source: string | null
-  createdAt: Date
 }
 
 export default function ResourceDetailClient({ resource }: { resource: Resource }) {

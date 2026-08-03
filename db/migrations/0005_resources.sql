@@ -101,12 +101,12 @@ ON CONFLICT (slug) DO NOTHING;
 -- Seed practice listings
 INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
   (gen_random_uuid()::text, 'Book a Mock Interview with 180DC', 'Schedule a live case practice session with an experienced 180 Degrees Consulting team member.', 'expert', NULL, '180DC NC State', 45, 1)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
   (gen_random_uuid()::text, 'Shadow a Case Session', 'Observe a live case interview between experienced members to learn best practices.', 'shadow', NULL, '180DC NC State', 30, 2)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO practice_listings (id, title, description, type, booking_url, host_name, duration_minutes, sort_order) VALUES
   (gen_random_uuid()::text, 'Peer Practice Matching', 'Get paired with another student for mutual case practice. Great for building confidence.', 'peer', NULL, NULL, 30, 3)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (id) DO NOTHING;
