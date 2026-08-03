@@ -502,3 +502,62 @@ export type LeaderboardProfile = typeof leaderboardProfiles.$inferSelect
 export type LeaderboardScoreCache = typeof leaderboardScoreCache.$inferSelect
 export type LeaderboardRankHistory = typeof leaderboardRankHistory.$inferSelect
 export type ConfigSetting = typeof configSettings.$inferSelect
+
+// ─── Resource Hub ──────────────────────────────────────────────────────────
+
+export const resourceFormatEnum = pgEnum("resource_format", [
+  "guide", "case_book", "video", "book", "drill_ref", "link", "pdf", "definition", "checklist"
+])
+
+export const resourceDifficultyEnum = pgEnum("resource_difficulty", [
+  "beginner", "intermediate", "advanced", "all_levels"
+])
+
+export const resourceCategories = pgTable("resource_categories", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  icon: text("icon"), // lucide icon name
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
+export const resources = pgTable("resources", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description").notNull(),
+  content: text("content"), // markdown body for guides/definitions
+  format: resourceFormatEnum("format").notNull(),
+  difficulty: resourceDifficultyEnum("difficulty").notNull().default("all_levels"),
+  categoryId: text("category_id").references(() => resourceCategories.id, { onDelete: "set null" }),
+  externalUrl: text("external_url"), // link to external resource
+  fileUrl: text("file_url"), // uploaded PDF etc.
+  author: text("author"), // e.g. "Darden School of Business"
+  source: text("source"), // e.g. "Harvard Business Review"
+  tags: text("tags").array().notNull().default([]),
+  isFeatured: boolean("is_featured").notNull().default(false),
+  isPublished: boolean("is_published").notNull().default(true),
+  viewCount: integer("view_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+})
+
+export const practiceListings = pgTable("practice_listings", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  type: text("type").notNull(), // "expert", "peer", "shadow", "group"
+  bookingUrl: text("booking_url"), // Calendly link etc.
+  hostName: text("host_name"),
+  durationMinutes: integer("duration_minutes"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+})
+
+export type Resource = typeof resources.$inferSelect
+export type NewResource = typeof resources.$inferInsert
+export type ResourceCategory = typeof resourceCategories.$inferSelect
+export type PracticeListing = typeof practiceListings.$inferSelect
