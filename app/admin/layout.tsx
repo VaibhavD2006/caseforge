@@ -38,6 +38,12 @@ export default async function AdminLayout({
                 Users
               </Link>
               <Link
+                href="/admin/resources"
+                className="text-ink-muted hover:text-ink text-sm transition-colors"
+              >
+                Resources
+              </Link>
+              <Link
                 href="/admin/settings"
                 className="text-ink-muted hover:text-ink text-sm transition-colors"
               >
