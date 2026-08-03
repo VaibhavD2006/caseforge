@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Clock, Send, ChevronDown, ChevronUp } from "lucide-react"
+import { AppNav } from "@/components/app-nav"
 
 type DrillProps = {
   id: string
@@ -84,13 +85,11 @@ export default function DrillAttemptClient({ drill, pastAttempts }: { drill: Dri
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Nav */}
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between">
-          <Link href="/drills" className="text-ink-muted text-xs hover:text-ink transition-colors">← Drill Library</Link>
-          <Timer estimatedMinutes={drill.estimatedMinutes} />
-        </div>
-      </nav>
+      <AppNav />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 h-10 flex items-center justify-between border-b border-border-subtle">
+        <Link href="/drills" className="text-ink-muted text-xs hover:text-ink transition-colors">← Drill Library</Link>
+        <Timer estimatedMinutes={drill.estimatedMinutes} />
+      </div>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
 import { BarChart2, Target, TrendingUp } from "lucide-react"
 import { FIRM_CONFIGS } from "@/config/firms/firm-styles"
+import { AppNav } from "@/components/app-nav"
 
 const DIM_LABELS: Record<string, string> = {
   structure: "Structure",
@@ -67,8 +68,8 @@ export default function AnalyticsClient({ scoreTrend, avgDimensions, modeAvg, se
           <BarChart2 className="w-10 h-10 text-ink-faint mx-auto mb-3" />
           <p className="text-ink text-base font-semibold mb-1">No data yet</p>
           <p className="text-ink-muted text-sm mb-4">Complete your first interview to see analytics.</p>
-          <Link href="/interview/new" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-sm font-semibold transition-colors">
-            Start interview
+          <Link href="/resources" className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-sm font-semibold transition-colors">
+            Browse Resources
           </Link>
         </div>
       </div>
@@ -77,15 +78,7 @@ export default function AnalyticsClient({ scoreTrend, avgDimensions, modeAvg, se
 
   return (
     <div className="min-h-screen bg-bg">
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-brand" />
-            <span className="text-ink font-semibold text-sm">Analytics</span>
-          </div>
-          <Link href="/dashboard" className="text-ink-muted text-xs hover:text-ink transition-colors">← Dashboard</Link>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         {/* Summary stats */}

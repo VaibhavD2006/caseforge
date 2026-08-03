@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { Zap, ChevronRight, Search } from "lucide-react"
+import { AppNav } from "@/components/app-nav"
 import { motion } from "framer-motion"
 import { FadeUp, StaggerList, StaggerItem } from "@/components/motion"
 
@@ -49,18 +50,7 @@ export default function DrillsClient({ drills }: { drills: Drill[] }) {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Top nav */}
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-brand flex items-center justify-center">
-              <span className="text-[oklch(0.10_0.012_148)] text-[9px] font-bold">CF</span>
-            </div>
-            <span className="text-ink font-semibold text-sm">Drill Library</span>
-          </div>
-          <Link href="/dashboard" className="text-ink-muted text-xs hover:text-ink transition-colors">← Dashboard</Link>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <FadeUp className="mb-6">

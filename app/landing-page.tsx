@@ -25,16 +25,16 @@ const FIRMS = ["McKinsey", "BCG", "Bain", "Deloitte", "Oliver Wyman", "LEK", "Ke
 
 const PROBLEMS = [
   {
-    title: "No real feedback loop",
-    body: "Prep books describe a strong case answer. They cannot tell you where your logic broke down or why you missed the mark.",
+    title: "Resources are scattered everywhere",
+    body: "Prep books, PDF case books, YouTube videos, Reddit posts — students waste hours hunting down materials instead of actually practicing.",
   },
   {
-    title: "Partner prep is scarce",
-    body: "Mock interviews with experienced coaches cost $200–$400 per hour and book weeks in advance. Most candidates get one or two.",
+    title: "No clear starting point",
+    body: "New students don't know whether to start with frameworks, cases, or drills. There's no beginner-friendly path.",
   },
   {
-    title: "Blind spots compound silently",
-    body: "Structural gaps grow without correction. Candidates walk into final rounds with the same weaknesses they started with.",
+    title: "Coaching costs hundreds of dollars",
+    body: "Expert mock interviews book weeks in advance and cost $200–$400 per hour. Most students get one or two at most.",
   },
 ]
 
@@ -42,60 +42,60 @@ const CAPABILITIES = [
   {
     wide: true,
     dark: true,
-    label: "AI Interviewer",
-    title: "A partner-level interviewer, always available",
-    body: "Adaptive prompts that mirror real BCG and McKinsey case styles. Pushes back when your logic slips or your structure is too broad.",
+    label: "Resource Library",
+    title: "Every guide, case, and framework in one place",
+    body: "Case interview guides, MBB primers, school case books, and structured frameworks — curated and organized so you find what you need in seconds.",
   },
   {
     wide: false,
     dark: false,
-    label: "Instant Scoring",
-    title: "Scored on 7 dimensions",
-    body: "Structure, synthesis, numerics, communication — each graded and explained after every session.",
+    label: "Drills",
+    title: "Targeted practice, no AI required",
+    body: "Structure, math, market sizing, synthesis — practiced in short focused sessions with clear feedback on what good looks like.",
   },
   {
     wide: false,
     dark: false,
-    label: "Weakness Tags",
-    title: "Pattern recognition across sessions",
-    body: "We track where you slip across 20+ sessions. One miss is noise; a pattern is a problem worth fixing.",
+    label: "Definitions",
+    title: "Quick answers to common questions",
+    body: "What is MBB? What is a framework? What is market sizing? Get clear, expert-style answers without digging through prep books.",
   },
   {
     wide: false,
     dark: true,
-    label: "Case Library",
-    title: "100+ cases across industries",
-    body: "Retail, healthcare, M&A, operations. Difficulty scales as your scores improve.",
+    label: "Case Books",
+    title: "Darden, Penn, Kellogg, and more",
+    body: "Curated school case books with difficulty levels and answer guidance. Practice real cases from top MBA programs.",
   },
   {
     wide: true,
     dark: false,
-    label: "Readiness Dashboard",
-    title: "Know when you are actually ready",
-    body: "Track your readiness score toward a verified interview-ready threshold. No guessing, no false confidence.",
+    label: "Expert Practice",
+    title: "Book time with 180DC advisors",
+    body: "Schedule real mock interviews with experienced 180DC consultants. Human feedback, on your schedule.",
   },
 ]
 
 const STEPS = [
   {
     n: "1",
-    title: "Set up your profile",
-    body: "Target firms, timeline, background. We calibrate difficulty from day one.",
+    title: "Start with the basics",
+    body: "What is consulting? What is a case? What is MBB? Get grounded in 10 minutes with our Consulting 101 guides.",
   },
   {
     n: "2",
-    title: "Pick a case",
-    body: "Choose from 100+ scenarios or let the system assign one matched to your current gaps.",
+    title: "Browse resources by topic",
+    body: "Filter by framework, industry, difficulty, or firm. Find exactly what you need for your current prep stage.",
   },
   {
     n: "3",
-    title: "Interview live",
-    body: "Talk through your case in real time. The AI follows your logic, asks follow-ups, and presses you when needed.",
+    title: "Practice with drills",
+    body: "Short, focused exercises for structure, math, market sizing, and synthesis. No AI required — just deliberate practice.",
   },
   {
     n: "4",
-    title: "Review your scorecard",
-    body: "Dimension-by-dimension feedback arrives in seconds. No waiting, no vague notes.",
+    title: "Book expert practice",
+    body: "When you are ready, schedule a mock interview with a 180DC advisor for real human feedback.",
   },
 ]
 
@@ -270,7 +270,7 @@ function HeroSection() {
                 letterSpacing: ".01em",
               }}
             >
-              250+ students practicing right now
+              Your consulting prep hub, built by 180DC
             </span>
           </motion.div>
 
@@ -288,8 +288,8 @@ function HeroSection() {
               textWrap: "balance",
             }}
           >
-            Crack the case.<br />
-            <span style={{ color: "#4ADE80" }}>Every session.</span>
+            Everything you need<br />
+            <span style={{ color: "#4ADE80" }}>to crack the case.</span>
           </motion.h1>
 
           <motion.p
@@ -305,7 +305,7 @@ function HeroSection() {
               letterSpacing: "-0.3px",
             }}
           >
-            See where you rank on campus.
+            The complete consulting prep library.
           </motion.p>
 
           <motion.p
@@ -320,7 +320,7 @@ function HeroSection() {
               maxWidth: "44ch",
             }}
           >
-            Live mock interviews, instant 7-dimension scoring, and a campus leaderboard that shows exactly where you stand before recruiting season.
+            The complete consulting prep library — guides, cases, drills, and expert resources — organized for students, by students.
           </motion.p>
 
           <motion.div
@@ -335,7 +335,7 @@ function HeroSection() {
               transition={{ duration: 0.12 }}
             >
               <Link
-                href="/sign-in"
+                href="/resources"
                 style={{
                   background: "#4ADE80",
                   color: "#071A0A",
@@ -347,7 +347,7 @@ function HeroSection() {
                   display: "inline-block",
                 }}
               >
-                Start practicing free →
+                Explore Resources →
               </Link>
             </motion.div>
             <motion.div
@@ -888,10 +888,10 @@ function HowItWorksSection() {
         >
           {(
             [
-              ["7", "dimensions scored"],
-              ["100+", "case scenarios"],
-              ["20+", "weakness tags tracked"],
-              ["48h", "from signup to first session"],
+              ["100+", "resources"],
+              ["25+", "drills"],
+              ["6", "categories"],
+              ["Free", "to start"],
             ] as [string, string][]
           ).map(([v, l], i) => (
             <motion.div

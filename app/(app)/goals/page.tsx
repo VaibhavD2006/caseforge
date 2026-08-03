@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Target, Plus, Trash2, CheckCircle } from "lucide-react"
+import { AppNav } from "@/components/app-nav"
 
 type Goal = {
   id: string
@@ -81,25 +82,17 @@ export default function GoalsPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-brand" />
-            <span className="text-ink font-semibold text-sm">Goals</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-ink-muted text-xs hover:text-ink transition-colors">← Dashboard</Link>
-            <button
-              type="button"
-              onClick={() => setShowForm((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              New goal
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AppNav />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 flex items-center justify-end">
+        <button
+          type="button"
+          onClick={() => setShowForm((v) => !v)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          New goal
+        </button>
+      </div>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">

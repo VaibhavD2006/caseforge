@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { PlayCircle, BarChart2 } from "lucide-react"
+import { BarChart2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { FadeUp, StaggerList, StaggerItem } from "@/components/motion"
+import { AppNav } from "@/components/app-nav"
 import { ReadinessCard } from "@/components/dashboard/ReadinessCard"
 import { TrendChart } from "@/components/dashboard/TrendChart"
 import { DimensionBreakdown } from "@/components/dashboard/DimensionBreakdown"
@@ -113,42 +114,7 @@ export default function DashboardClient({
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Top nav */}
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-brand flex items-center justify-center">
-                <span className="text-[oklch(0.10_0.012_148)] text-[10px] font-bold">CF</span>
-              </div>
-              <span className="text-ink font-semibold text-sm">CaseForge</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-4">
-              {[
-                { href: "/dashboard", label: "Dashboard" },
-                { href: "/interview/new", label: "Interview" },
-                { href: "/drills", label: "Drills" },
-                { href: "/goals", label: "Goals" },
-                { href: "/analytics", label: "Analytics" },
-                { href: "/history", label: "History" },
-                { href: "/leaderboard", label: "Leaderboard" },
-                { href: "/settings", label: "Settings" },
-              ].map((item) => (
-                <Link key={item.href} href={item.href} className="text-ink-muted text-sm hover:text-ink transition-colors">
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <Link
-            href="/interview/new"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-xs font-semibold transition-colors"
-          >
-            <PlayCircle className="w-3.5 h-3.5" />
-            New Interview
-          </Link>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
@@ -271,11 +237,10 @@ export default function DashboardClient({
               </p>
             </div>
             <Link
-              href="/interview/new"
+              href="/resources"
               className="mt-4 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-brand hover:bg-brand-hover text-[oklch(0.10_0.012_148)] text-sm font-semibold transition-colors"
             >
-              <PlayCircle className="w-4 h-4" />
-              Start Interview
+              Browse Resources
             </Link>
           </div>
         </FadeUp>

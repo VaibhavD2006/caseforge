@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { AppNav } from "@/components/app-nav"
 import { Settings, Check, Trophy } from "lucide-react"
 
 const FIRM_OPTIONS = [
@@ -104,17 +105,7 @@ export default function SettingsClient({ profile, user, leaderboard }: Props) {
 
   return (
     <div className="min-h-screen bg-bg">
-      <nav className="border-b border-border-subtle bg-surface sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-brand" />
-            <span className="text-ink font-semibold text-sm">Settings</span>
-          </div>
-          <Link href="/dashboard" className="text-ink-muted text-xs hover:text-ink transition-colors">
-            ← Dashboard
-          </Link>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-5">
         {/* Account */}
