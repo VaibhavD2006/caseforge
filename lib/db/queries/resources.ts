@@ -1,6 +1,6 @@
 import { db } from "@/lib/db"
 import { resources, resourceCategories, practiceListings } from "@/lib/db/schema"
-import { eq, ilike, or, and, desc, sql } from "drizzle-orm"
+import { eq, ilike, or, and, desc, sql, ne } from "drizzle-orm"
 
 export async function getResourceCategories() {
   const cols = {
@@ -123,6 +123,29 @@ export async function getResourceBySlug(slug: string) {
     .where(and(eq(resources.slug, slug), eq(resources.isPublished, true)))
     .limit(1)
   return resource ?? null
+}
+
+export async function getRelatedResources(currentId: string, limit = 3) {
+  const cols = {
+    id: resources.id,
+    title: resources.title,
+    slug: resources.slug,
+    description: resources.description,
+    format: resources.format,
+    difficulty: resources.difficulty,
+    tags: resources.tags,
+    isFeatured: resources.isFeatured,
+    viewCount: resources.viewCount,
+    externalUrl: resources.externalUrl,
+    author: resources.author,
+    source: resources.source,
+  }
+  return db
+    .select(cols)
+    .from(resources)
+    .where(and(eq(resources.isPublished, true), ne(resources.id, currentId)))
+    .orderBy(desc(resources.isFeatured), desc(resources.viewCount))
+    .limit(limit)
 }
 
 export async function incrementViewCount(id: string) {

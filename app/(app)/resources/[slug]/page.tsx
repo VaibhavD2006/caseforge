@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import ResourceDetailClient from "./resources-detail-client"
-import { getResourceBySlug, incrementViewCount } from "@/lib/db/queries/resources"
+import { getResourceBySlug, incrementViewCount, getRelatedResources } from "@/lib/db/queries/resources"
 
 export const dynamic = "force-dynamic"
 
@@ -9,8 +9,10 @@ export default async function ResourceDetailPage({ params }: { params: Promise<{
   const resource = await getResourceBySlug(slug)
   if (!resource) notFound()
 
-  // fire-and-forget view count increment
-  incrementViewCount(resource.id).catch(() => {})
+  const [related] = await Promise.all([
+    getRelatedResources(resource.id, 3).catch(() => [] as Awaited<ReturnType<typeof getRelatedResources>>),
+    incrementViewCount(resource.id).catch(() => {}),
+  ])
 
-  return <ResourceDetailClient resource={resource} />
+  return <ResourceDetailClient resource={resource} related={related} />
 }
