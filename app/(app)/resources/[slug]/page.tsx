@@ -4,11 +4,9 @@ import { getResourceBySlug, incrementViewCount } from "@/lib/db/queries/resource
 
 export const dynamic = "force-dynamic"
 
-export default async function ResourceDetailPage({ params }: { params: { slug: string } }) {
-  const resource = await getResourceBySlug(params.slug).catch((e) => {
-    console.error("[resources/slug] query failed:", e)
-    return null
-  })
+export default async function ResourceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const resource = await getResourceBySlug(slug)
   if (!resource) notFound()
 
   // fire-and-forget view count increment
