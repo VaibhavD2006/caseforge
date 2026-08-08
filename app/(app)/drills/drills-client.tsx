@@ -135,7 +135,7 @@ export default function DrillsClient({ drills }: { drills: Drill[] }) {
         {filtered.length === 0 ? (
           <p className="text-ink-faint text-sm">No drills match your filters.</p>
         ) : (
-          <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <StaggerList key={`${skill}-${diff}-${industry}-${search}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filtered.map((d) => (
               <StaggerItem key={d.id}>
               <motion.div whileHover={{ y: -3, transition: { duration: 0.18 } }} whileTap={{ scale: 0.98 }}>
