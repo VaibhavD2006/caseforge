@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Search, Star, ExternalLink, BookOpen, Calendar, Users, Eye } from "lucide-react"
+import { Search, Star, ExternalLink, BookOpen, Calendar, Users, Eye, Building2, LayoutGrid, BookMarked, FileText, Play } from "lucide-react"
 import { AppNav } from "@/components/app-nav"
 
 type Resource = {
@@ -62,6 +62,15 @@ const DIFF_COLORS: Record<string, string> = {
   intermediate: "text-[oklch(0.72_0.15_78)] bg-[oklch(0.16_0.05_78)] border-[oklch(0.30_0.08_78)]",
   advanced: "text-[oklch(0.60_0.18_22)] bg-[oklch(0.16_0.05_22)] border-[oklch(0.28_0.08_22)]",
   all_levels: "text-ink-faint bg-surface border-border-subtle",
+}
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "consulting-basics": <Building2 className="w-3.5 h-3.5" />,
+  "frameworks": <LayoutGrid className="w-3.5 h-3.5" />,
+  "case-books": <BookMarked className="w-3.5 h-3.5" />,
+  "guides": <FileText className="w-3.5 h-3.5" />,
+  "books": <BookOpen className="w-3.5 h-3.5" />,
+  "videos": <Play className="w-3.5 h-3.5" />,
 }
 
 const FORMAT_FILTERS = [
@@ -159,6 +168,17 @@ export default function ResourcesClient({
 
   const isFiltering = search || format !== "all" || difficulty !== "all"
 
+  const byCategory = useMemo(() => {
+    const map = new Map<string, Resource[]>()
+    for (const r of allResources) {
+      const key = r.categoryId ?? "__none__"
+      const bucket = map.get(key) ?? []
+      bucket.push(r)
+      map.set(key, bucket)
+    }
+    return map
+  }, [allResources])
+
   return (
     <div className="min-h-screen bg-bg">
       <AppNav />
@@ -225,38 +245,58 @@ export default function ResourcesClient({
         </div>
       )}
 
-      {/* All resources / filtered results */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-ink font-semibold text-sm">
-            {isFiltering ? `Results (${filtered.length})` : "All Resources"}
-          </h2>
-          {isFiltering && (
+      {/* Category folders (default) / flat results (when filtering) */}
+      {isFiltering ? (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-ink font-semibold text-sm">Results ({filtered.length})</h2>
             <button
               onClick={() => { setSearch(""); setFormat("all"); setDifficulty("all") }}
-              className="text-ink-faint text-xs hover:text-ink transition-colors"
+              className="text-ink-faint text-xs hover:text-ink transition-colors cursor-pointer"
             >
               Clear filters
             </button>
+          </div>
+          {filtered.length === 0 ? (
+            <div className="bg-surface border border-border-subtle rounded-xl p-8 text-center">
+              <BookOpen className="w-8 h-8 text-ink-faint mx-auto mb-2" />
+              <p className="text-ink-muted text-sm">No resources match your search.</p>
+              <button
+                onClick={() => { setSearch(""); setFormat("all"); setDifficulty("all") }}
+                className="mt-2 text-brand text-xs hover:underline cursor-pointer"
+              >
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filtered.map((r) => <ResourceCard key={r.id} r={r} />)}
+            </div>
           )}
         </div>
-        {filtered.length === 0 ? (
-          <div className="bg-surface border border-border-subtle rounded-xl p-8 text-center">
-            <BookOpen className="w-8 h-8 text-ink-faint mx-auto mb-2" />
-            <p className="text-ink-muted text-sm">No resources match your search.</p>
-            <button
-              onClick={() => { setSearch(""); setFormat("all"); setDifficulty("all") }}
-              className="mt-2 text-brand text-xs hover:underline"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map((r) => <ResourceCard key={r.id} r={r} />)}
-          </div>
-        )}
-      </div>
+      ) : (
+        <div className="space-y-8">
+          {categories
+            .filter((c) => byCategory.has(c.id))
+            .map((c) => {
+              const items = byCategory.get(c.id) ?? []
+              return (
+                <div key={c.id}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-brand">{CATEGORY_ICONS[c.slug]}</span>
+                    <h2 className="text-ink font-semibold text-sm">{c.name}</h2>
+                    <span className="text-ink-faint text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-surface border border-border-subtle">
+                      {items.length}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {items.map((r) => <ResourceCard key={r.id} r={r} />)}
+                  </div>
+                </div>
+              )
+            })}
+        </div>
+      )}
 
       {/* Practice & Expert Sessions */}
       {practice.length > 0 && (
