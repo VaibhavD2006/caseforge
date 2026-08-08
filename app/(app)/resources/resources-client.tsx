@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react"
 import Link from "next/link"
-import { Search, Star, ExternalLink, BookOpen, Calendar, Users, Eye, Building2, LayoutGrid, BookMarked, FileText, Play } from "lucide-react"
+import { Search, Star, ExternalLink, BookOpen, Calendar, Users, Eye, Building2, LayoutGrid, BookMarked, FileText, Play, Briefcase } from "lucide-react"
 import { AppNav } from "@/components/app-nav"
 
 type Resource = {
@@ -71,6 +71,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   "guides": <FileText className="w-3.5 h-3.5" />,
   "books": <BookOpen className="w-3.5 h-3.5" />,
   "videos": <Play className="w-3.5 h-3.5" />,
+  "industry-primers": <Briefcase className="w-3.5 h-3.5" />,
 }
 
 const FORMAT_FILTERS = [

@@ -401,6 +401,7 @@ export const drills = pgTable('drills', {
   expectedTraits: text('expected_traits').array().notNull().default([]),
   estimatedMinutes: integer('estimated_minutes').notNull().default(5),
   interviewMode: interviewTypeEnum('interview_mode'),
+  industry: text('industry'),
   isActive: boolean('is_active').notNull().default(true),
   timesAttempted: integer('times_attempted').notNull().default(0),
   createdAt: timestamp('created_at').notNull().defaultNow(),

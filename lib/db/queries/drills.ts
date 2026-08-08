@@ -6,21 +6,13 @@ import type { Drill } from "@/lib/db/schema"
 export async function getActiveDrills(filters?: {
   skillFocus?: string
   difficulty?: string
+  industry?: string
 }) {
-  let query = db.select().from(drills).where(eq(drills.isActive, true)).$dynamic()
-
-  if (filters?.skillFocus) {
-    query = query.where(
-      and(eq(drills.isActive, true), sql`${drills.skillFocus} = ${filters.skillFocus}`)
-    )
-  }
-  if (filters?.difficulty) {
-    query = query.where(
-      and(eq(drills.isActive, true), sql`${drills.difficulty} = ${filters.difficulty}`)
-    )
-  }
-
-  return db.select().from(drills).where(eq(drills.isActive, true)).orderBy(drills.skillFocus)
+  const conditions = [eq(drills.isActive, true)]
+  if (filters?.skillFocus) conditions.push(sql`${drills.skillFocus} = ${filters.skillFocus}`)
+  if (filters?.difficulty) conditions.push(sql`${drills.difficulty} = ${filters.difficulty}`)
+  if (filters?.industry) conditions.push(sql`${drills.industry} = ${filters.industry}`)
+  return db.select().from(drills).where(and(...conditions)).orderBy(drills.skillFocus)
 }
 
 export async function getDrillById(id: string): Promise<Drill | undefined> {

@@ -12,6 +12,7 @@ type Drill = {
   title: string
   skillFocus: string
   difficulty: string
+  industry: string | null
   estimatedMinutes: number
   timesAttempted: number
   userAttempts: number
@@ -36,14 +37,27 @@ const SKILL_LABELS: Record<string, string> = {
 const SKILLS = Object.keys(SKILL_LABELS)
 const DIFFICULTIES = ["easy", "medium", "hard"]
 
+const INDUSTRY_LABELS: Record<string, string> = {
+  healthcare: "Healthcare & Pharma",
+  technology: "Technology",
+  financial_services: "Financial Services",
+  retail_consumer: "Retail & Consumer",
+  energy: "Energy",
+}
+
 export default function DrillsClient({ drills }: { drills: Drill[] }) {
   const [search, setSearch] = useState("")
   const [skill, setSkill] = useState("all")
   const [diff, setDiff] = useState("all")
+  const [industry, setIndustry] = useState("all")
 
   const filtered = drills.filter((d) => {
     if (skill !== "all" && d.skillFocus !== skill) return false
     if (diff !== "all" && d.difficulty !== diff) return false
+    if (industry !== "all") {
+      if (industry === "general" && d.industry !== null) return false
+      if (industry !== "general" && d.industry !== industry) return false
+    }
     if (search && !d.title.toLowerCase().includes(search.toLowerCase())) return false
     return true
   })
@@ -80,6 +94,16 @@ export default function DrillsClient({ drills }: { drills: Drill[] }) {
             {SKILLS.map((s) => <option key={s} value={s}>{SKILL_LABELS[s]}</option>)}
           </select>
 
+          <select
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-border-subtle bg-surface text-ink text-xs focus:outline-none focus:border-brand-muted cursor-pointer"
+          >
+            <option value="all">All industries</option>
+            <option value="general">General</option>
+            {Object.entries(INDUSTRY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+
           <div className="flex items-center gap-1">
             {["all", ...DIFFICULTIES].map((d) => (
               <button
@@ -97,10 +121,10 @@ export default function DrillsClient({ drills }: { drills: Drill[] }) {
             ))}
           </div>
 
-          {(skill !== "all" || diff !== "all" || search) && (
+          {(skill !== "all" || diff !== "all" || industry !== "all" || search) && (
             <button
               type="button"
-              onClick={() => { setSkill("all"); setDiff("all"); setSearch("") }}
+              onClick={() => { setSkill("all"); setDiff("all"); setIndustry("all"); setSearch("") }}
               className="text-ink-faint text-xs hover:text-ink transition-colors cursor-pointer"
             >
               Clear filters
@@ -124,7 +148,14 @@ export default function DrillsClient({ drills }: { drills: Drill[] }) {
                     <p className="text-ink text-sm font-medium leading-snug">{d.title}</p>
                     <ChevronRight className="w-4 h-4 text-ink-faint group-hover:text-brand flex-shrink-0 transition-colors mt-0.5" />
                   </div>
-                  <p className="text-ink-faint text-xs capitalize mb-3">{SKILL_LABELS[d.skillFocus] ?? d.skillFocus}</p>
+                  <p className="text-ink-faint text-xs capitalize mb-3">
+                    {SKILL_LABELS[d.skillFocus] ?? d.skillFocus}
+                    {d.industry && (
+                      <span className="ml-2 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-[oklch(0.13_0.03_250)] border border-[oklch(0.22_0.05_250)] text-[oklch(0.55_0.10_250)]">
+                        {INDUSTRY_LABELS[d.industry] ?? d.industry}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

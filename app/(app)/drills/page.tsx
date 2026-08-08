@@ -16,6 +16,7 @@ export default async function DrillsPage() {
         title: d.title,
         skillFocus: d.skillFocus,
         difficulty: d.difficulty,
+        industry: d.industry ?? null,
         estimatedMinutes: d.estimatedMinutes,
         timesAttempted: d.timesAttempted,
         userAttempts: attemptCounts[d.id] ?? 0,
